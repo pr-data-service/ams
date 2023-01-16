@@ -1,0 +1,21 @@
+
+.MuiAppBar-colorPrimary {
+    color: #fff;
+    background-color: #337ab7 !important;
+}
+
+.MuiAccordionSummary-root.Mui-expanded {
+    min-height: 16px !important;
+}
+
+.MuiAccordionSummary-content.Mui-expanded {
+    margin: 10px 0 !important;
+}
+
+.MuiTabPanel-root {
+    padding: 0px !important;
+}
+
+@keyframes blinker {  
+    50% { opacity: 0; }
+  }
