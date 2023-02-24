@@ -148,7 +148,7 @@ public class EventsServiceImpl implements EventsService {
 		
 		List<EventsEntity> list = eventsRepository.findByName(userContext.getApartmentId(), eventsDTO.getName());
 		if(list != null && eventsDTO.getId() != null && eventsDTO.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != eventsDTO.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != eventsDTO.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;

@@ -25,7 +25,7 @@ public class ReflectionUtils {
 	}
 	
 	public static List<String> getFieldNames(Class cls) {
-		return Arrays.asList(cls.getDeclaredFields()).stream().map( m -> m.getName()).toList(); 
+		return Arrays.asList(cls.getDeclaredFields()).stream().map( m -> m.getName()).collect(Collectors.toList());
 	}
 	
 	public static <T> T getRootEntityMappingAnnotation(Class<?> cls) {

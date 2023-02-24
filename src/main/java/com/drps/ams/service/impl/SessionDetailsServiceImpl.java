@@ -245,7 +245,7 @@ public class SessionDetailsServiceImpl implements SessionDetailsService {
 		
 		List<SessionDetailsEntity> list = sessionDetailsRepository.findByName(apartmentId, dto.getName());
 		if(list != null && dto.getId() != null && dto.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != dto.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != dto.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;

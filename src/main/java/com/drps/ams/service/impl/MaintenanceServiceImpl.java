@@ -180,7 +180,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		UserContext userContext = Utils.getUserContext();
 		List<MaintenanceEntity> list = maintenanceRepository.getAll(userContext.getApartmentId(), userContext.getSessionId(), maintenanceDTO.getFlatId());
 		if(list != null && maintenanceDTO.getId() != null && maintenanceDTO.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != maintenanceDTO.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != maintenanceDTO.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;

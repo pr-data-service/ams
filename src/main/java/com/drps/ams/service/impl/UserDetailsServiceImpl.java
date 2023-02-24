@@ -2,6 +2,7 @@ package com.drps.ams.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,7 +152,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	public boolean isDuplicateRecord(UserDetailsDTO userDetailsDTO) {
 		List<UserDetailsEntity> list = userDetailsRepository.findByContactNo1(userDetailsDTO.getContactNo1());
 		if(list != null && userDetailsDTO.getId() != null && userDetailsDTO.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != userDetailsDTO.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != userDetailsDTO.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;

@@ -1,6 +1,7 @@
 package com.drps.ams.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -128,7 +129,7 @@ public class NotesServiceImpl implements NotesService {
 			list = notesRepository.findByNoteType(userContext.getApartmentId(), userContext.getSessionId(), dto.getParentObject(), dto.getParentRecordId(), ApiConstants.NOTE_TYPE_SYSTEM);
 		}
 		if(list != null && dto.getId() != null && dto.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != dto.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != dto.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;

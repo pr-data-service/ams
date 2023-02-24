@@ -213,7 +213,7 @@ public class CommonServiceImpl implements CommonService {
 						logger.error(e.getMessage());
 					}
 					return null;
-				}).distinct().toList();
+				}).distinct().collect(Collectors.toList());
 				fldId.setAccessible(true);
 				
 				List<FlatDetailsEntity> flatList = flatDetailsRepository.getFlatList(userContext.getApartmentId(), flatIds);		
@@ -264,7 +264,7 @@ public class CommonServiceImpl implements CommonService {
 						logger.error(e.getMessage());
 					}
 					return null;
-				}).distinct().toList();
+				}).distinct().collect(Collectors.toList());
 				fldSessionId.setAccessible(true);
 				
 				List<SessionDetailsEntity> sessionList = sessionDetailsRepository.getSessionDetailsList(userContext.getApartmentId(), sessionIds);		
@@ -316,7 +316,7 @@ public class CommonServiceImpl implements CommonService {
 						logger.error(e.getMessage());
 					}
 					return null;
-				}).distinct().toList();
+				}).distinct().collect(Collectors.toList());
 				fldId.setAccessible(true);
 				
 				List<EventsEntity> eventList = eventsRepository.getListByIds(userContext.getApartmentId(), ids);
@@ -353,21 +353,6 @@ public class CommonServiceImpl implements CommonService {
 			if(list != null && !list.isEmpty() && list.get(0) != null) {
 				Class cls = list.get(0).getClass();
 				Field paymentById = cls.getDeclaredField("paymentBy");
-				paymentById.setAccessible(true);
-				List<Long> paymentByIds = list.stream().map( m -> {
-					try {
-						return (Long)paymentById.get(m);
-					} catch (IllegalArgumentException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						logger.error(e.getMessage());
-					} catch (IllegalAccessException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						logger.error(e.getMessage());
-					}
-					return null;
-				}).distinct().toList();
 				paymentById.setAccessible(true);
 				
 				List<UserDetailsEntity> userDetailsList = userDetailsRepository.getAll(userContext.getApartmentId());		

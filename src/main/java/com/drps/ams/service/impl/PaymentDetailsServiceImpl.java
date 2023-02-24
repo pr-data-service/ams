@@ -102,7 +102,7 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
                 .comparing(PaymentDetailsDTO::getPaymentYear, Comparator.nullsFirst(Comparator.naturalOrder()))
                 .thenComparing(PaymentDetailsDTO::getPaymentMonth, Comparator.nullsFirst(Comparator.naturalOrder()));
 		
-		rtnList =  rtnList.stream().sorted(compareByYearThenMonth.reversed()).toList();
+		rtnList =  rtnList.stream().sorted(compareByYearThenMonth.reversed()).collect(Collectors.toList());
 		commonService.addUserDetailsToDTO(rtnList, PaymentDetailsDTO.class);
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
 	}
@@ -131,19 +131,19 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 		}
 		
 		if(reqParamDto.getSeacrchFields() != null) {
-			List<ListViewFieldDTO> filterList = reqParamDto.getSeacrchFields().stream().filter( f -> !"flatNo".equals(f.getDataField())).toList();
+			List<ListViewFieldDTO> filterList = reqParamDto.getSeacrchFields().stream().filter( f -> !"flatNo".equals(f.getDataField())).collect(Collectors.toList());
 					
 			for(ListViewFieldDTO fieldDto: filterList) {
 				try {
 					if(fieldDto != null && fieldDto.getValue() != null) {
 						if("amount".equals(fieldDto.getDataField()) && !fieldDto.getValue().toString().trim().isEmpty()) {
-							rtnList = rtnList.stream().filter( f -> f.getAmount() == Double.parseDouble(fieldDto.getValue().toString())).toList();
+							rtnList = rtnList.stream().filter( f -> f.getAmount() == Double.parseDouble(fieldDto.getValue().toString())).collect(Collectors.toList());
 						} else if("paymentForSessionName".equals(fieldDto.getDataField())) {
-							rtnList = rtnList.stream().filter( f -> f.getPaymentForSessionName().contains(fieldDto.getValue().toString())).toList();
+							rtnList = rtnList.stream().filter( f -> f.getPaymentForSessionName().contains(fieldDto.getValue().toString())).collect(Collectors.toList());
 						} else if("paymentMonthName".equals(fieldDto.getDataField())) {
-							rtnList = rtnList.stream().filter( f -> f.getPaymentMonthName().contains(fieldDto.getValue().toString())).toList();
+							rtnList = rtnList.stream().filter( f -> f.getPaymentMonthName().contains(fieldDto.getValue().toString())).collect(Collectors.toList());
 						} else if("paymentYear".equals(fieldDto.getDataField()) && !fieldDto.getValue().toString().trim().isEmpty()) {
-							rtnList = rtnList.stream().filter( f -> f.getPaymentYear() == Integer.parseInt(fieldDto.getValue().toString())).toList();
+							rtnList = rtnList.stream().filter( f -> f.getPaymentYear() == Integer.parseInt(fieldDto.getValue().toString())).collect(Collectors.toList());
 						} 
 					}
 				} catch (Exception e) {

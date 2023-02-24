@@ -2,6 +2,7 @@ package com.drps.ams.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -153,7 +154,7 @@ public class MaintenanceMasterServiceImpl implements MaintenanceMasterService {
 	private boolean isDuplicateRecord(MaintenanceMasterDTO maintenanceMasterDTO) {
 		List<MaintenanceMasterEntity> list = maintenanceMasterRepository.findByAmount(maintenanceMasterDTO.getAmount());
 		if(list != null && maintenanceMasterDTO.getId() != null && maintenanceMasterDTO.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != maintenanceMasterDTO.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != maintenanceMasterDTO.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;

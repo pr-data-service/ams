@@ -2,6 +2,7 @@ package com.drps.ams.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -149,7 +150,7 @@ public class FlatDetailsServiceImpl implements FlatDetailsService {
 		
 		List<FlatDetailsEntity> list = flatDetailsRepository.findByFlatNo(userContext.getApartmentId(), flatDetailsDTO.getFlatNo());
 		if(list != null && flatDetailsDTO.getId() != null && flatDetailsDTO.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != flatDetailsDTO.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != flatDetailsDTO.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;
