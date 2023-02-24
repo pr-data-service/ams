@@ -58,7 +58,7 @@ public class DynamicQuery<T> implements Specification<T>{
 	}
 	
 	private void addParentRecord(Root<T> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
-		if(reqParamDto != null && reqParamDto.getParentFieldName() != null && !reqParamDto.getParentFieldName().isBlank()
+		if(reqParamDto != null && reqParamDto.getParentFieldName() != null && !ParameterVerifier.isBlank(reqParamDto.getParentFieldName())
 				&& reqParamDto.getParentRecordId() > 0) {
 			predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get(reqParamDto.getParentFieldName()), reqParamDto.getParentRecordId())));
 		}
@@ -66,7 +66,7 @@ public class DynamicQuery<T> implements Specification<T>{
 	}
 	
 	private void addSearchFieldValue(Root<T> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
-		if(reqParamDto != null && reqParamDto.getSearchFieldName() != null && !reqParamDto.getSearchFieldName().isBlank()) {
+		if(reqParamDto != null && reqParamDto.getSearchFieldName() != null && !ParameterVerifier.isBlank(reqParamDto.getSearchFieldName())) {
 			predicates.add(criteriaBuilder.and(criteriaBuilder.like(root.get(reqParamDto.getSearchFieldName()), "%"+reqParamDto.getSearchFieldValue()+"%")));
 		}
 		

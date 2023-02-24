@@ -16,6 +16,7 @@ import javax.persistence.criteria.Root;
 import org.apache.el.util.ReflectionUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import com.drps.ams.annotation.EntityFieldMapping;
 import com.drps.ams.annotation.FKEntityFieldMapping;
@@ -31,6 +32,7 @@ import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
 import com.drps.ams.util.DBConstants;
 import com.drps.ams.util.DateUtils;
+import com.drps.ams.util.ParameterVerifier;
 import com.drps.ams.util.ReflectionUtils;
 import com.drps.ams.util.Utils;
 
@@ -144,12 +146,12 @@ public class QueryMaker<T> {
 	
 	private String getParentRecordClause() {
 		String clause = "";
-		if(reqParamDto != null && reqParamDto.getParentObject() != null && !reqParamDto.getParentObject().isBlank()) {
+		if(reqParamDto != null && !ParameterVerifier.isBlank(reqParamDto.getParentObject())) {
 			String rootEntity = Utils.wordCamelCase(root.getSimpleName());
 			clause += rootEntity+".parentObject = '"+ reqParamDto.getParentObject()+"'";
 		}
 		
-		if(reqParamDto != null && reqParamDto.getParentFieldName() != null && !reqParamDto.getParentFieldName().isBlank()
+		if(reqParamDto != null && !ParameterVerifier.isBlank(reqParamDto.getParentFieldName())
 				&& reqParamDto.getParentRecordId() > 0) {
 			String rootEntity = Utils.wordCamelCase(root.getSimpleName());
 			if(!clause.isEmpty()) {
