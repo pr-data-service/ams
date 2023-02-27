@@ -484,4 +484,29 @@ public class PaymentServiceImpl implements PaymentService {
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS));
 	}
 	
+	@Override
+	public ApiResponseEntity getDuesListForAdvancePayment(Long flatId, int month, int year) throws Exception {
+		UserContext userContext = Utils.getUserContext();
+		PaymentDetailsDTO payDtlsDto = null;
+		if(flatId != null && flatId > 0) {
+			FlatDetailsEntity flatDetailsEntity = flatDetailsRepository.findById(flatId).orElse(null);
+			String flatNo = flatDetailsEntity != null ? flatDetailsEntity.getFlatNo() : "";
+			
+			payDtlsDto = new PaymentDetailsDTO();
+			payDtlsDto.setId(Long.valueOf(1));
+			payDtlsDto.setFlatId(flatId);
+			payDtlsDto.setFlatNo(flatNo);
+			
+			int mn = month <= 0 ? userContext.getSessionDetailsEntity().getToDate().getMonth()+1 : month;
+			int yr = year <= 0 ? userContext.getSessionDetailsEntity().getToDate().getYear()+1900 : year;
+			payDtlsDto.setPaymentMonth(mn == 12 ? 1 : mn+1);
+			payDtlsDto.setPaymentYear(mn == 12 ? yr+1 : yr);
+			
+			List<PaymentDetailsDTO> duesList = new ArrayList<>();
+			duesList.add(payDtlsDto);
+			sessionDetailsService.addSessionIdAndMaintenanceOnList(duesList, flatId);
+		}
+		
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, payDtlsDto);
+	}
 }

@@ -23,4 +23,6 @@ public interface PaymentService {
 
 	File getFileToDownload(Long id);
 
+	ApiResponseEntity getDuesListForAdvancePayment(Long flatId, int month, int year) throws Exception;
+
 }

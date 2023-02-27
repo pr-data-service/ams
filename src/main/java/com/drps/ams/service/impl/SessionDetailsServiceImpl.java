@@ -220,6 +220,8 @@ public class SessionDetailsServiceImpl implements SessionDetailsService {
 							dto.setAmount(mainEnt.getAmount());
 						}
 					}
+				} else {
+					throw new RuntimeException("Session not found.");
 				}
 			}
 		}
