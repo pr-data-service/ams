@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.MaintenanceDTO;
+import com.drps.ams.entity.MaintenanceEntity;
 
 import lombok.NonNull;
 
@@ -21,5 +22,6 @@ public interface MaintenanceService {
 
 	ApiResponseEntity deleteAllById(List<Long> ids) throws Exception;
 
-	boolean isDuplicateRecord(MaintenanceDTO maintenanceDTO);
+	void deleteMaintenance(MaintenanceEntity entity);
+
 }

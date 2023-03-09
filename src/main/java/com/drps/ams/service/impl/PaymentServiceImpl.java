@@ -189,88 +189,6 @@ public class PaymentServiceImpl implements PaymentService {
 		return eventsDtoList;
 	}
 	
-	public List<PaymentDetailsDTO> getDuesList(Long flatId) {
-		UserContext userContext = Utils.getUserContext();
-		
-		List<PaymentDetailsDTO> duesList = new ArrayList<>();
-		
-		PaymentDetailsEntity lastPayment = null;
-		List<PaymentDetailsEntity> list = paymentDetailsRepository.findByFlatIdForDueList(userContext.getApartmentId(), flatId);
-		list = list.stream().filter( f -> f.getEventId() == 1).collect(Collectors.toList());
-		if(list != null && !list.isEmpty()) {			
-			Comparator<PaymentDetailsEntity> compareByYearThenMonth = Comparator
-	                .comparing(PaymentDetailsEntity::getPaymentYear)
-	                .thenComparing(PaymentDetailsEntity::getPaymentMonth);
-		
-			lastPayment =  list.stream().sorted(compareByYearThenMonth.reversed()).limit(1).findAny().orElse(null);
-		}
-		
-		LocalDate currentDate = LocalDate.now(ZoneId.systemDefault());
-		SessionDetailsEntity sessionDtls = sessionDetailsRepository.findById(userContext.getSessionId()).get();
-		if(sessionDtls != null) {
-			if(lastPayment == null && sessionDtls.getFromDate() != null) {
-				
-				LocalDate localDate = sessionDtls.getFromDate().toInstant()
-					      .atZone(ZoneId.systemDefault())
-					      .toLocalDate();
-				
-				lastPayment = new PaymentDetailsEntity();
-				lastPayment.setPaymentYear(localDate.getYear());
-				lastPayment.setPaymentMonth(localDate.getMonth().getValue()-1);
-				
-			}
-			if(sessionDtls.getToDate() != null) {
-				LocalDate toDt = sessionDtls.getToDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-				currentDate = currentDate.isAfter(toDt) ? toDt : currentDate;
-			}
-		}
-		
-		
-		
-		
-		FlatDetailsEntity flatDetailsEntity = flatDetailsRepository.findById(flatId).orElse(null);
-		String flatNo = flatDetailsEntity != null ? flatDetailsEntity.getFlatNo() : "";
-		if(lastPayment != null && currentDate != null) {
-			
-			Integer year = lastPayment.getPaymentYear();
-			Integer month = lastPayment.getPaymentMonth()+1;
-			
-			Integer currentYear = currentDate.getYear();
-			Integer currentMonth = currentDate.getMonth().getValue();
-			
-			PaymentDetailsDTO payDtlsDto = null;
-			
-			long tempRecId = 1;
-			int tempfromMonth = month;
-			int tempToMonth = 12;
-			for(int yr = year; yr <= currentYear; yr++) {
-				
-				if(yr == currentYear) {
-					tempToMonth = currentMonth;
-				}
-				for(int mn = tempfromMonth; mn <= tempToMonth; mn++) {
-					payDtlsDto = new PaymentDetailsDTO();
-					payDtlsDto.setId(tempRecId++);
-					payDtlsDto.setFlatId(flatId);
-					payDtlsDto.setFlatNo(flatNo);
-					payDtlsDto.setPaymentMonth(mn);
-					payDtlsDto.setPaymentYear(yr);
-					duesList.add(payDtlsDto);
-				}
-				tempfromMonth = 1;
-			}
-			
-		} else {
-			throw new RuntimeException("Error on create due list.");
-		}
-		
-		if(duesList != null && !duesList.isEmpty()) {
-			sessionDetailsService.addSessionIdAndMaintenanceOnList(duesList, flatId);
-		}
-		
-		return duesList;
-	}
-	
 	@Transactional
 	@Override
 	public ApiResponseEntity save(PaymentSaveDTO paymentSaveDTO) throws Exception {
@@ -484,29 +402,4 @@ public class PaymentServiceImpl implements PaymentService {
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS));
 	}
 	
-	@Override
-	public ApiResponseEntity getDuesListForAdvancePayment(Long flatId, int month, int year) throws Exception {
-		UserContext userContext = Utils.getUserContext();
-		PaymentDetailsDTO payDtlsDto = null;
-		if(flatId != null && flatId > 0) {
-			FlatDetailsEntity flatDetailsEntity = flatDetailsRepository.findById(flatId).orElse(null);
-			String flatNo = flatDetailsEntity != null ? flatDetailsEntity.getFlatNo() : "";
-			
-			payDtlsDto = new PaymentDetailsDTO();
-			payDtlsDto.setId(Long.valueOf(1));
-			payDtlsDto.setFlatId(flatId);
-			payDtlsDto.setFlatNo(flatNo);
-			
-			int mn = month <= 0 ? userContext.getSessionDetailsEntity().getToDate().getMonth()+1 : month;
-			int yr = year <= 0 ? userContext.getSessionDetailsEntity().getToDate().getYear()+1900 : year;
-			payDtlsDto.setPaymentMonth(mn == 12 ? 1 : mn+1);
-			payDtlsDto.setPaymentYear(mn == 12 ? yr+1 : yr);
-			
-			List<PaymentDetailsDTO> duesList = new ArrayList<>();
-			duesList.add(payDtlsDto);
-			sessionDetailsService.addSessionIdAndMaintenanceOnList(duesList, flatId);
-		}
-		
-		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, payDtlsDto);
-	}
 }

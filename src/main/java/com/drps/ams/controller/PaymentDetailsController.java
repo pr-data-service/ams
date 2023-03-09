@@ -41,10 +41,18 @@ public class PaymentDetailsController {
 		return ResponseEntity.status(HttpStatus.OK).body(paymentDetailsService.getDuesListView(reqParams));		
 	}
 	
-	@PostMapping(value = "/save")
-	public ResponseEntity<ApiResponseEntity> save(@RequestBody PaymentDetailsDTO paymentDetailsDto) throws Exception {
+	@PostMapping(value = "/last_payment_date/save")
+	public ResponseEntity<ApiResponseEntity> saveLastPaymentDate(@RequestBody PaymentDetailsDTO paymentDetailsDto) throws Exception {
 		logger.info("AMS - PaymentDetailsController save");		
-		return ResponseEntity.status(HttpStatus.OK).body(paymentDetailsService.save(paymentDetailsDto));		
+		return ResponseEntity.status(HttpStatus.OK).body(paymentDetailsService.saveLastPaymentDate(paymentDetailsDto));		
 	}
 	
+	@GetMapping(value = "/advance_payment_dues/get/{flat_id}/{month}/{year}")
+	public ResponseEntity<ApiResponseEntity> getDuesListForAdvancePayment(
+			@PathVariable("flat_id") Long flatId,
+			@PathVariable("month") Integer month,
+			@PathVariable("year") Integer year) throws Exception {
+		logger.info("AMS - PaymentController getDuesListForAdvancePayment");
+		return ResponseEntity.status(HttpStatus.OK).body(paymentDetailsService.getDuesListForAdvancePayment(flatId, month, year));		
+	}
 }

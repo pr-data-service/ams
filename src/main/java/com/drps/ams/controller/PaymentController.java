@@ -97,12 +97,4 @@ public class PaymentController {
 		Utils.downloadPdfFile(request, response, file);
 	}
 	
-	@GetMapping(value = "/advance_payment_dues_list/get/{flat_id}/{month}/{year}")
-	public ResponseEntity<ApiResponseEntity> getDuesListForAdvancePayment(
-			@PathVariable("flat_id") Long flatId,
-			@PathVariable("month") Integer month,
-			@PathVariable("year") Integer year) throws Exception {
-		logger.info("AMS - PaymentController getDuesListForAdvancePayment");
-		return ResponseEntity.status(HttpStatus.OK).body(paymentService.getDuesListForAdvancePayment(flatId, month, year));		
-	}
 }
