@@ -69,6 +69,7 @@ import com.drps.ams.service.SessionDetailsService;
 import com.drps.ams.service.UserDetailsService;
 import com.drps.ams.util.Utils;
 import com.drps.ams.util.ApiConstants;
+import com.drps.ams.util.DateUtils;
 import com.drps.ams.util.DynamicQuery;
 import com.drps.pdf.PaymentReceiptPDF;
 
@@ -350,6 +351,8 @@ public class PaymentServiceImpl implements PaymentService {
 				
 				List<EventsEntity> eventList = eventsRepository.findAll();
 				Map<Long, String> eventListMap = eventList.stream().collect(Collectors.toMap(EventsEntity::getId, EventsEntity::getName));
+				
+				//String fileName = "maintenance-payment-receipt-"+flatDetailsEntity.getFlatNo()+"-"+DateUtils.dateTimeToString(null);
 				
 				PaymentReceiptPDF pdf = new PaymentReceiptPDF(FILE, entity, paymentItemList, result, eventListMap);
 				file = pdf.getFile();
