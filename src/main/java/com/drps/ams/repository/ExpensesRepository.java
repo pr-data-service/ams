@@ -17,4 +17,7 @@ public interface ExpensesRepository extends JpaRepository<ExpensesEntity, Long>,
 
 	@Query("SELECT f FROM ExpensesEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
 	List<ExpensesEntity> getAll(Long apartmentId, Long sessionId, Pageable pageable);
+	
+	@Query("SELECT f FROM ExpensesEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
+	List<ExpensesEntity> getAll(Long apartmentId, Long sessionId);
 }

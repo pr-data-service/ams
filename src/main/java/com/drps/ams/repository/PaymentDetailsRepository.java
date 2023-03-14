@@ -49,4 +49,14 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetailsEn
 			+ " AND m.paymentMonth > 0 AND m.paymentYear > 0 AND m.amount = :amount")
 	public List<PaymentDetailsEntity> getPaymentForSessionId(Long apartmentId, Long paymentForSessionId, Long flatId, double amount);
 	
+	
+	@Query("SELECT m FROM PaymentDetailsEntity m WHERE m.apartmentId = :apartmentId AND m.sessionId = :sessionId"
+			+ " AND m.paymentMonth > 0 AND m.paymentYear > 0")
+	public List<PaymentDetailsEntity> getMaintenanceDetailsList(Long apartmentId, Long sessionId);
+	
+	@Query("SELECT m FROM PaymentDetailsEntity m WHERE m.apartmentId = :apartmentId AND m.sessionId = :sessionId"
+			+ " AND m.eventId != 1")
+	public List<PaymentDetailsEntity> getEventPaymentList(Long apartmentId, Long sessionId);
+	
+	
 }

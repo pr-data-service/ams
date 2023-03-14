@@ -36,6 +36,16 @@ public class DateUtils {
 		return strDate;
 	}
 	
+	public static String dateToStringYYYYMMDD(Date date) {		
+		String strDate = null;
+		if(date==null) {
+			date = new Date();
+		}
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		strDate = dateFormat.format(date); 
+		return strDate;
+	}
+	
 	public static Date stringToDate(String strDate) {		
 		Date date = null;
 		DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
