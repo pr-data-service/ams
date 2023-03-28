@@ -58,5 +58,9 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetailsEn
 			+ " AND m.eventId != 1")
 	public List<PaymentDetailsEntity> getEventPaymentList(Long apartmentId, Long sessionId);
 	
+	@Query("SELECT f.id, f.flatNo, SUM(m.amount) FROM PaymentDetailsEntity m, FlatDetailsEntity f WHERE m.flatId = f.id AND m.apartmentId = :apartmentId AND m.sessionId = :sessionId"
+			+ " AND m.eventId = :eventId AND m.eventId != 1 GROUP BY m.flatId")
+	public List<Object[]> getEventPaymentList(Long apartmentId, Long sessionId, Long eventId);
+	
 	
 }

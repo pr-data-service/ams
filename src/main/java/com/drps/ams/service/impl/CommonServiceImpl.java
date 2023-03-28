@@ -381,4 +381,42 @@ public class CommonServiceImpl implements CommonService {
 			throw new RuntimeException(e.getMessage());
 		}		
 	}
+	
+	@Override
+	public <T> void addOwnersNameAndContactNoToDTO(List<T> list) {
+		UserContext userContext = Utils.getUserContext();
+		try {
+			if(list != null && !list.isEmpty() && list.get(0) != null) {
+				Class cls = list.get(0).getClass();
+				Field flatIdFld = cls.getDeclaredField("flatId");
+				flatIdFld.setAccessible(true);
+				
+				Field ownersNameFld = cls.getDeclaredField("ownersName");
+				Field contactNoFld = cls.getDeclaredField("contactNo");
+				list.forEach( f -> {
+					if(f != null) {
+						try {
+							List<Object[]> linkList = linkFlatDetailsAndUserDetailsRepository.getLinkObjectDetails(userContext.getApartmentId(), Long.parseLong(String.valueOf(flatIdFld.get(f))));
+							String firstName = linkList.get(0)[3] != null ? linkList.get(0)[3]+"" : "";
+							String lastName = linkList.get(0)[4] != null ? linkList.get(0)[4]+"" : "";
+							String userFullName = firstName + " "+ lastName;
+							ownersNameFld.set(f, userFullName);
+							contactNoFld.set(f, linkList.get(0)[5] != null ? linkList.get(0)[5]+"" : "");
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							logger.error(e.getMessage());
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							logger.error(e.getMessage());
+						}
+					}
+				});
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		}		
+	}
 }

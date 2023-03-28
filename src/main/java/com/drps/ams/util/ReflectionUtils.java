@@ -148,9 +148,30 @@ public class ReflectionUtils {
 			}
 		}
 	}
+
+	public static Object getValue(Class cls, Object srcObj, String fieldName){
+		Object obj = null;
+		try {
+			Field fld = cls.getDeclaredField(fieldName);
+			fld.setAccessible(true);
+			obj = fld.get(srcObj);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return obj;		
+	}
 	
-	public static void setValue(Class cls1, Class clas2, String fieldName, Object Value) {
-		
+	public static void setValue(Class cls, Object srcObj, String fieldName, Object value){
+		Field fld;
+		try {
+			fld = cls.getDeclaredField(fieldName);
+			fld.setAccessible(true);
+			fld.set(srcObj, value);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 	
 	public static void main(String[] args) throws NoSuchFieldException, SecurityException {

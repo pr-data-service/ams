@@ -74,4 +74,7 @@ public class PaymentDetailsDTO {
 	
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
 	public Date modifiedDate;	
+	
+	public String ownersName;
+	public String contactNo;
 }

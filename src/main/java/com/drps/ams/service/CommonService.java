@@ -24,4 +24,6 @@ public interface CommonService {
 
 	<T> void addPaymentByToDTO(List<T> list);
 
+	<T> void addOwnersNameAndContactNoToDTO(List<T> list);
+
 }
