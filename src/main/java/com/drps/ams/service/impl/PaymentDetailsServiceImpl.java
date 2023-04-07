@@ -117,7 +117,7 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 			Long eventId = reqParamDto.getId();
 			EventsEntity eventsEntity = eventsRepository.findById(eventId).get();
 			
-			List<Object[]> list = paymentDetailsRepository.getEventPaymentList(userContext.getApartmentId(), userContext.getSessionId(), eventId);
+			List<Object[]> list = paymentDetailsRepository.getEventPaymentList(userContext.getApartmentId(), eventId);
 			List<Long> paymentFlatIdList = list.stream().map( m -> Long.valueOf(String.valueOf(m[0]))).collect(Collectors.toList());
 			List<FlatDetailsEntity> flatNotPaymentList = flatDetailsRepository.getFlatListNotIn(userContext.getApartmentId(), paymentFlatIdList);
 			

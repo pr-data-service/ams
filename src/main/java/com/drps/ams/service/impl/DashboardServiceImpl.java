@@ -73,7 +73,7 @@ public class DashboardServiceImpl implements DashboardService {
 		
 		
 		List<EventsEntity> eventList = eventsRepository.getAllActiveEntity(userContext.getApartmentId());
-		List<PaymentDetailsEntity> list = paymentDetailsRepository.getEventPaymentList(userContext.getApartmentId(), userContext.getSessionId());
+		List<PaymentDetailsEntity> list = paymentDetailsRepository.getEventPaymentList(userContext.getApartmentId());
 		List<ExpensesEntity> expenseList = expensesRepository.getAll(userContext.getApartmentId(), userContext.getSessionId());
 		
 		

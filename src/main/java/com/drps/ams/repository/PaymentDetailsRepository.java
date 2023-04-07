@@ -54,13 +54,13 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetailsEn
 			+ " AND m.paymentMonth > 0 AND m.paymentYear > 0")
 	public List<PaymentDetailsEntity> getMaintenanceDetailsList(Long apartmentId, Long sessionId);
 	
-	@Query("SELECT m FROM PaymentDetailsEntity m WHERE m.apartmentId = :apartmentId AND m.sessionId = :sessionId"
+	@Query("SELECT m FROM PaymentDetailsEntity m WHERE m.apartmentId = :apartmentId AND (m.isCanceled IS NULL OR m.isCanceled = 0)"
 			+ " AND m.eventId != 1")
-	public List<PaymentDetailsEntity> getEventPaymentList(Long apartmentId, Long sessionId);
+	public List<PaymentDetailsEntity> getEventPaymentList(Long apartmentId);
 	
-	@Query("SELECT f.id, f.flatNo, SUM(m.amount) FROM PaymentDetailsEntity m, FlatDetailsEntity f WHERE m.flatId = f.id AND m.apartmentId = :apartmentId AND m.sessionId = :sessionId"
-			+ " AND m.eventId = :eventId AND m.eventId != 1 GROUP BY m.flatId")
-	public List<Object[]> getEventPaymentList(Long apartmentId, Long sessionId, Long eventId);
+	@Query("SELECT f.id, f.flatNo, SUM(m.amount) FROM PaymentDetailsEntity m, FlatDetailsEntity f WHERE m.flatId = f.id AND m.apartmentId = :apartmentId"
+			+ " AND m.eventId = :eventId AND (m.isCanceled IS NULL OR m.isCanceled = 0) GROUP BY m.flatId")
+	public List<Object[]> getEventPaymentList(Long apartmentId, Long eventId);
 	
 	
 }
