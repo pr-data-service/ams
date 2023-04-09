@@ -134,9 +134,9 @@ public class DashboardServiceImpl implements DashboardService {
 	
 	public Map<Long, Double> getTodaysMaintenance() {System.out.println(DateUtils.stringToDateTime("04-09-2022 00:00:00"));
 		UserContext userContext = Utils.getUserContext();
-		String startDt = DateUtils.dateToStringYYYYMMDD(null) + " 00:00:00";
-		String endDt = DateUtils.dateToStringYYYYMMDD(null) + " 23:59:59";
-		List<PaymentEntity> list = paymentRepository.getTodaysPaymentList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTime(startDt), DateUtils.stringToDateTime(endDt));
+		String startDt = DateUtils.dateToStringForDB(null) + " 00:00:00";
+		String endDt = DateUtils.dateToStringForDB(null) + " 23:59:59";
+		List<PaymentEntity> list = paymentRepository.getTodaysPaymentList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTimeForDB(startDt), DateUtils.stringToDateTimeForDB(endDt));
 		list = list.stream().filter( f -> f.getAmount() != null).collect(Collectors.toList());
 		
 		Map<Long, Double> map = new HashMap<>();

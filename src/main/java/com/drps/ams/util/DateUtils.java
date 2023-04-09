@@ -20,11 +20,12 @@ public class DateUtils {
 	
 	public static final String TIMEZONE_ASIA_KOLKATA = "Asia/Kolkata";
 	
-	private static final String DATE_FORMAT = "dd-MM-yyyy";
-	
-	private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
-	
+	private static final String DATE_FORMAT = "dd-MM-yyyy";	
+	private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";	
 	private static final String TIME_FORMAT = "HH:mm:ss";
+	
+	private static final String DATE_FORMAT_FOR_DB = "yyyy-MM-dd";	
+	private static final String DATE_TIME_FORMAT_FOR_DB = "yyyy-MM-dd HH:mm:ss";
 	
 	public static String dateToString(Date date) {		
 		String strDate = null;
@@ -36,12 +37,12 @@ public class DateUtils {
 		return strDate;
 	}
 	
-	public static String dateToStringYYYYMMDD(Date date) {		
+	public static String dateToStringForDB(Date date) {
 		String strDate = null;
 		if(date==null) {
 			date = new Date();
 		}
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_FOR_DB);
 		strDate = dateFormat.format(date); 
 		return strDate;
 	}
@@ -76,6 +77,23 @@ public class DateUtils {
 	public static Date stringToDateTime(String strDate) {		
 		Date date = null;
 		DateFormat dateFormat = new SimpleDateFormat(DATE_TIME_FORMAT);
+		if(strDate!=null) {
+			try {
+				date = dateFormat.parse(strDate);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		} else {
+			date = new Date();			
+		}	
+		
+		return date;
+	}
+	
+	public static Date stringToDateTimeForDB(String strDate) {		
+		Date date = null;
+		DateFormat dateFormat = new SimpleDateFormat(DATE_TIME_FORMAT_FOR_DB);
 		if(strDate!=null) {
 			try {
 				date = dateFormat.parse(strDate);

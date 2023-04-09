@@ -1,18 +1,16 @@
 package com.drps.ams.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import com.drps.ams.bean.UserContext;
 import com.drps.ams.entity.LinkFlatDetailsAndUserDetailsEntity;
 
 public class ApiConstants {
+	
+	public static final String STRING_TIMEZONE_ID_IST = "IST";
+	public static final String STRING_TIMEZONE_ID_UTC = "UTC";
 	
 	public static final int RESP_STATUS_SUCCESS = 100;	
 	public static final int RESP_STATUS_FAIL = 0;
