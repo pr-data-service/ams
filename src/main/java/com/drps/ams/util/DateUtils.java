@@ -37,6 +37,20 @@ public class DateUtils {
 		return strDate;
 	}
 	
+	public static String dateToString(Date date, String dateFormat) {
+		String strDate = null;
+		if(date==null) {
+			date = new Date();
+		}
+		
+		if(dateFormat==null) {
+			dateFormat = DATE_FORMAT;
+		}
+		DateFormat df = new SimpleDateFormat(dateFormat);
+		strDate = df.format(date); 
+		return strDate;
+	}
+	
 	public static String dateToStringForDB(Date date) {
 		String strDate = null;
 		if(date==null) {
