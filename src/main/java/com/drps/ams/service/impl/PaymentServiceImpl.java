@@ -2,6 +2,9 @@ package com.drps.ams.service.impl;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -19,6 +22,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -35,6 +40,7 @@ import com.drps.ams.dto.PaymentCancelDTO;
 import com.drps.ams.dto.PaymentDTO;
 import com.drps.ams.dto.PaymentDetailsDTO;
 import com.drps.ams.dto.PaymentSaveDTO;
+import com.drps.ams.dto.PaymentSlipByMonthsDTO;
 import com.drps.ams.dto.RequestParamDTO;
 import com.drps.ams.entity.EventsEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
@@ -46,6 +52,7 @@ import com.drps.ams.entity.SessionDetailsEntity;
 import com.drps.ams.entity.MaintenanceMasterEntity;
 import com.drps.ams.entity.NotesEntity;
 import com.drps.ams.entity.UserDetailsEntity;
+import com.drps.ams.exception.FileStorageException;
 import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.exception.UserContextNotFoundException;
@@ -68,6 +75,7 @@ import com.drps.ams.service.PaymentService;
 import com.drps.ams.service.SessionDetailsService;
 import com.drps.ams.service.UserDetailsService;
 import com.drps.ams.util.Utils;
+import com.drps.ams.util.ZipFileUtils;
 import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.DateUtils;
 import com.drps.ams.util.DynamicQuery;
@@ -353,7 +361,7 @@ public class PaymentServiceImpl implements PaymentService {
 				List<EventsEntity> eventList = eventsRepository.findAll();
 				Map<Long, String> eventListMap = eventList.stream().collect(Collectors.toMap(EventsEntity::getId, EventsEntity::getName));
 				
-				String filePath = FileUtils.prepairFilePath(FILE, entity, flatDetailsEntity);
+				String filePath = FileUtils.prepairFilePath(userContext, FILE, entity, flatDetailsEntity);
 				PaymentReceiptPDF pdf = new PaymentReceiptPDF(filePath, entity, paymentItemList, result, eventListMap);
 				file = pdf.getFile();
 				
@@ -403,6 +411,33 @@ public class PaymentServiceImpl implements PaymentService {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
 		}
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS));
+	}
+	
+	@Override
+	public ApiResponseEntity getSlipByMonths() {
+		UserContext userContext = Utils.getUserContext();
+		List <PaymentSlipByMonthsDTO> dtoList = new ArrayList<PaymentSlipByMonthsDTO>();
+		
+		String sessionName = userContext.getSessionDetailsEntity().getName();
+		String path = FILE + "/" + sessionName;
+		File parentFolder = new File(path);
+		File []folderAndFiles = parentFolder.listFiles();
+		
+		for (File file : folderAndFiles) {
+			if(file.isDirectory()) {
+				PaymentSlipByMonthsDTO ps = new PaymentSlipByMonthsDTO();
+				ps.setFolderName(file.getName());
+				ps.setFolderPath(path+"/"+file.getName());
+				dtoList.add(ps);
+			}
+		}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dtoList);
+	}
+	
+	@Override
+	public File downloadZip (String folderName) throws Exception {
+		UserContext userContext = Utils.getUserContext();
+		return ZipFileUtils.createZip(userContext, FILE, folderName);
 	}
 	
 }

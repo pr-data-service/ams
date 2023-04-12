@@ -2,9 +2,14 @@ package com.drps.ams.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import com.drps.ams.bean.UserContext;
 import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.PaymentEntity;
+import com.drps.ams.exception.FileStorageException;
 
 public class FileUtils {
 	public static void createFolder (String path, String folderName) {
@@ -71,14 +76,23 @@ public class FileUtils {
 		}
 	}
 	
-	public static String prepairFilePath(String path, PaymentEntity entity, FlatDetailsEntity flatDetailsEntity ){
+	public static String prepairFilePath(UserContext userContext, String path, PaymentEntity entity, FlatDetailsEntity flatDetailsEntity ){
 		
-		createDir(path);
+		// Create dir for Session
+		String sessionName = userContext.getSessionDetailsEntity().getName();
+		path = path + "/" + sessionName;
 		
-		// Month wise folder creation.....
+		// Month wise dir creation.....
 		String monthYear = DateUtils.dateToString(entity.getPaymentDate(), "MM-yyyy");
-		createFolder(path, monthYear);
 		path = path + "/" + monthYear;
+		
+		Path fileStorageLocation = Paths.get(path).toAbsolutePath().normalize();
+
+        try {
+            Files.createDirectories(fileStorageLocation);
+        } catch (Exception ex) {
+            throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
+        }
 		
 		String fileName = "payment-receipt_"+flatDetailsEntity.getFlatNo().replaceAll("/", "-")+"_"+ monthYear;
 		if (entity.getIsCanceled() != null && entity.getIsCanceled()) {

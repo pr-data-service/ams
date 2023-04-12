@@ -97,4 +97,19 @@ public class PaymentController {
 		Utils.downloadPdfFile(request, response, file);
 	}
 	
+	@GetMapping(value = "/slip_by_months/get")
+	public ResponseEntity<ApiResponseEntity> getSlipByMonths (){
+		logger.info("AMS - PaymentController getSlipByMonths");		
+		return ResponseEntity.status(HttpStatus.OK).body(paymentService.getSlipByMonths());
+	}
+	
+	@GetMapping(value = "/download_zip/{fn}")
+	public void downloadZip(@PathVariable("fn") String folderName,
+			HttpServletRequest request, HttpServletResponse response
+			) throws Exception {
+		logger.info("AMS - PaymentController downloadZip"+folderName);	
+		File file = paymentService.downloadZip(folderName);
+		Utils.downloadPdfFile(request, response, file);
+	}
+	
 }
