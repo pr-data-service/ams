@@ -7,4 +7,6 @@ public interface EmailService {
 
 	ApiResponseEntity saveOrUpdate(EmailSetupDetailsDTO emailSetupDetailsDTO);
 
+	ApiResponseEntity getByApartmentId();
+
 }

@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +29,12 @@ private static final  Logger logger = LogManager.getLogger(EmailController.class
 	public ResponseEntity<ApiResponseEntity> createOrUpdate(@RequestBody EmailSetupDetailsDTO emailSetupDetailsDTO) throws Exception {
 		logger.info("AMS - EmailController createOrUpdate: {}", emailSetupDetailsDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(emailService.saveOrUpdate(emailSetupDetailsDTO));		
+	}
+	
+	@GetMapping(value = "/setup/get")
+	public ResponseEntity<ApiResponseEntity> getSelf() throws Exception {
+		logger.info("AMS - EmailController getSelf: {}");
+		return ResponseEntity.status(HttpStatus.OK).body(emailService.getByApartmentId());		
 	}
 	
 }

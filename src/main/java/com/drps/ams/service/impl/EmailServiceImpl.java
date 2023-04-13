@@ -82,4 +82,18 @@ public class EmailServiceImpl implements EmailService {
 		return list != null && list.size() > 0 ? true : false;
 	}
 	
+	@Override
+	public ApiResponseEntity getByApartmentId() {
+		UserContext userContext = Utils.getUserContext();
+		EmailSetupDetailsDTO emailSetupDetailsDto = new EmailSetupDetailsDTO();
+		
+		EmailSetupDetailsEntity emailSetupDetailsEntity = null;
+		if (userContext.getApartmentId() != null && userContext.getApartmentId() > 0) {
+			
+			emailSetupDetailsEntity = emailSetupDetailsRepository.findByApartmentId(userContext.getApartmentId());
+			BeanUtils.copyProperties(emailSetupDetailsEntity,emailSetupDetailsDto);
+		}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, emailSetupDetailsDto);
+	}
+	
 }

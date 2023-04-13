@@ -16,4 +16,10 @@ public interface EmailSetupDetailsRepository extends JpaRepository<EmailSetupDet
 	
 	@Query("SELECT e FROM EmailSetupDetailsEntity e WHERE e.apartmentId = :apartmentId AND e.email = :email")
 	List<EmailSetupDetailsEntity> findByEmail(Long apartmentId, String email);
+	
+	@Query("SELECT e FROM EmailSetupDetailsEntity e WHERE e.apartmentId = :apartmentId")
+	EmailSetupDetailsEntity findByApartmentId(Long apartmentId);
+	
+//	@Query(value ="SELECT * FROM email_setup_details where APARTMENT_ID = :apartmentId", nativeQuery= true)
+//	EmailSetupDetailsEntity findByApartmentId(Long apartmentId);
 }
