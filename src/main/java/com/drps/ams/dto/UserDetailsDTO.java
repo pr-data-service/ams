@@ -26,9 +26,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
-@EntityMapping(entity = UserDetailsEntity.class)
 public class UserDetailsDTO {
-
 
 	private Long id;	
 	
@@ -56,15 +54,4 @@ public class UserDetailsDTO {
 	
 	private Boolean isActive;
 	
-	private Long createdBy;	
-	private String createdByName;
-	
-	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
-	private Date createdDate;
-	
-	private Long modifiedBy;	
-	private String modifiedByName;
-	
-	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
-	private Date modifiedDate;	
 }

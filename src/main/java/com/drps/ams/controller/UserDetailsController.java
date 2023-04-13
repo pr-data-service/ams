@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.UserDetailsDTO;
+import com.drps.ams.dto.UserPasswordDTO;
 import com.drps.ams.service.UserDetailsService;
 
 
@@ -73,5 +74,18 @@ public class UserDetailsController {
 	public ResponseEntity<ApiResponseEntity> getByFlatId(@PathVariable("id") Long flatId) throws Exception {
 		logger.info("AMS - UserDetailsController getByFlatId");
 		return ResponseEntity.status(HttpStatus.OK).body(userDetailsService.getByFlatId(flatId));
+	}
+	
+	@GetMapping(value = "/loggedin/get")
+	public ResponseEntity<ApiResponseEntity> getLoggedInUder() throws Exception {
+		logger.info("AMS - UserDetailsController getLoggedInUder");
+		return ResponseEntity.status(HttpStatus.OK).body(userDetailsService.getLoggedInUder());		
+	}
+
+	@PostMapping(value = "/update_password")
+	public ResponseEntity<ApiResponseEntity> updatePassword(@RequestBody UserPasswordDTO userPasswordDTO) throws Exception {
+		logger.info("AMS - UserDetailsController updatePassword: {}", userPasswordDTO);
+		
+		return ResponseEntity.status(HttpStatus.OK).body(userDetailsService.updatePassword(userPasswordDTO));		
 	}
 }

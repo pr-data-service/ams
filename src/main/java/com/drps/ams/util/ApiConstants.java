@@ -18,6 +18,7 @@ public class ApiConstants {
 	public static final int RESP_STATUS_USER_DISABLED_EXCEPTION = 201;
 	public static final int RESP_STATUS_INVALID_CREDENTIALS_EXCEPTION = 202;
 	public static final int RESP_STATUS_USER_CONTEXT_NOT_FOUND_EXCEPTION = 203;
+	public static final int RESP_STATUS_INVALID_CONFIRM_PASSWORD_EXCEPTION = 204;
 	
 	public static final int RESP_STATUS_NO_RECORD_FOUND_EXCEPTION = 220;
 	public static final int RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION = 221;
@@ -31,6 +32,8 @@ public class ApiConstants {
 	private static final String RESP_STATUS_MSG_RECORD_ID_NOT_FOUND = "Record id not found";
 	private static final String RESP_STATUS_MSG_DUPLICATE_RECORD = "Duplicate Record found";
 	private static final String RESP_STATUS_MSG_USER_CONTEXT_NOT_FOUND = "User Context not found";
+	private static final String RESP_STATUS_MSG_INVALID_CONFIRM_PASSWORD = "New password and confirm password should be same.";
+	private static final String RESP_STATUS_MSG_INVALID_CREDENTIALS = "Invalid credentials.";
 	
 	public static final Map<Integer, String> STATUS_MESSAGE = new HashMap<>();
 	static {
@@ -41,8 +44,8 @@ public class ApiConstants {
 		STATUS_MESSAGE.put(RESP_STATUS_NO_RECORD_FOUND_EXCEPTION, RESP_STATUS_MSG_NO_RECORD_FOUND);
 		STATUS_MESSAGE.put(RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION, RESP_STATUS_MSG_RECORD_ID_NOT_FOUND);
 		STATUS_MESSAGE.put(RESP_STATUS_DUPLICATE_RECORD_EXCEPTION, RESP_STATUS_MSG_DUPLICATE_RECORD);
-		
-		
+		STATUS_MESSAGE.put(RESP_STATUS_INVALID_CONFIRM_PASSWORD_EXCEPTION, RESP_STATUS_MSG_INVALID_CONFIRM_PASSWORD);
+		STATUS_MESSAGE.put(RESP_STATUS_INVALID_CREDENTIALS_EXCEPTION, RESP_STATUS_MSG_INVALID_CREDENTIALS);
 	}
 	
 	public static final String OBJECT_USER_DETAILS = "USER_DETAILS";
