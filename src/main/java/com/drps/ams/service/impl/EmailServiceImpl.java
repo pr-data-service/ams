@@ -12,6 +12,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.drps.ams.bean.EmailProps;
 import com.drps.ams.bean.UserContext;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.EmailSetupDetailsDTO;
@@ -22,6 +23,15 @@ import com.drps.ams.repository.EmailSetupDetailsRepository;
 import com.drps.ams.service.EmailService;
 import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.Utils;
+import java.io.File;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
 import lombok.NonNull;
 
@@ -36,6 +46,9 @@ public class EmailServiceImpl implements EmailService {
 	
 	@Autowired
 	EmailSetupDetailsRepository emailSetupDetailsRepository;
+	
+	@Autowired
+	private JavaMailSender emailSender;
 	
 	@Override
 	public ApiResponseEntity saveOrUpdate(@NonNull EmailSetupDetailsDTO emailSetupDetailsDTO) {
@@ -94,6 +107,33 @@ public class EmailServiceImpl implements EmailService {
 			BeanUtils.copyProperties(emailSetupDetailsEntity,emailSetupDetailsDto);
 		}
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, emailSetupDetailsDto);
+	}
+	
+
+	public void sendSimpleMessage(String to, String subject, String text) {
+		SimpleMailMessage message = new SimpleMailMessage();
+		message.setFrom("pradyut.bca15@gmail.com");
+		message.setTo(to);
+		message.setSubject(subject);
+		message.setText(text);
+		emailSender.send(message);
+	}
+
+	public void sendSimpleMessage(EmailProps emailProps)
+			throws MessagingException {
+		MimeMessage message = emailSender.createMimeMessage();
+
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+		helper.setFrom("pradyut.bca15@gmail.com");
+		helper.setTo(emailProps.getTo());
+		helper.setSubject(emailProps.getSubject());
+		helper.setText(emailProps.getText());
+
+		FileSystemResource file = new FileSystemResource(new File(emailProps.getPathToAttachment()));
+		helper.addAttachment("Invoice", file);
+
+		emailSender.send(message);
 	}
 	
 }
