@@ -1,7 +1,13 @@
 package com.drps.ams.service.impl;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +41,7 @@ import com.drps.ams.entity.PaymentDetailsEntity;
 import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
 import com.drps.ams.entity.UserDetailsEntity;
+import com.drps.ams.exception.FileStorageException;
 import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.repository.EventsRepository;
@@ -55,7 +62,10 @@ import com.drps.ams.service.PaymentDetailsService;
 import com.drps.ams.service.PaymentService;
 import com.drps.ams.service.SessionDetailsService;
 import com.drps.ams.util.ApiConstants;
+import com.drps.ams.util.DateUtils;
+import com.drps.ams.util.ExcelFileUtils;
 import com.drps.ams.util.FileUtils;
+import com.drps.ams.util.ReflectionUtils;
 import com.drps.ams.util.Utils;
 import com.drps.ams.util.ZipFileUtils;
 import com.drps.pdf.PaymentReceiptPDF;
@@ -415,7 +425,59 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
+		maintenanceExcelByMonth(folderName);
 		return ZipFileUtils.createZip(userContext, FILE, folderName);
 	}
 	
+	public void maintenanceExcelByMonth (String folderName) {
+		UserContext userContext = Utils.getUserContext();
+
+		Date firstDay = DateUtils.stringToDate("01-"+folderName);
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(firstDay);
+		int lastDayOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+		calendar.set(Calendar.DAY_OF_MONTH, lastDayOfMonth);
+		Date lastDay = calendar.getTime();
+		
+		String startDt = DateUtils.dateToStringForDB(firstDay) + " 00:00:00";
+		String endDt = DateUtils.dateToStringForDB(lastDay) + " 23:59:59";
+		List<Object[]> list = paymentRepository.getMonthlyPaymentList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTimeForDB(startDt), DateUtils.stringToDateTimeForDB(endDt));
+		
+		List<PaymentDTO> listDto = new ArrayList<>();
+		for(Object[] arr : list) {
+			PaymentEntity entity = (PaymentEntity)arr[0];
+			String flatNo = (String)arr[1];
+			String createdBy=(String)arr[2];
+			String paymentBy = (String)arr[3];
+			PaymentDTO dto = new PaymentDTO();
+			BeanUtils.copyProperties(entity, dto);
+			dto.setFlatNo(flatNo);
+			dto.setCreatedByName(createdBy);
+			dto.setPaymentByName(paymentBy);
+			
+			listDto.add(dto);
+		}
+		
+		
+		
+		String path = FILE;
+		// Create dir for Session
+		String sessionName = userContext.getSessionDetailsEntity().getName();
+		path = path + "/" + sessionName;
+		
+		// Month wise dir creation.....		
+		path = path + "/" + folderName;
+		
+		Path fileStorageLocation = Paths.get(path).toAbsolutePath().normalize();
+
+        try {
+            Files.createDirectories(fileStorageLocation);
+            String fileName = path + "/" +  "payment-receipt_"+ folderName;
+    		List<Object> headerFields = Arrays.asList(new String[] {"Srl No", "Bill No", "Flat Id", "Amount", "Payment Mode", "Payment Mode Ref", "Payment Date", "Payment By", "Is Canceled", "Cancel Remarks", "Created Date", "Created By"}) ; 
+    		ExcelFileUtils.createExcelSheet(headerFields, listDto, folderName, fileName);
+        } catch (Exception ex) {
+            throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
+        }
+	}
 }
+
