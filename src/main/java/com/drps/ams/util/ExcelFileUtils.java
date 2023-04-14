@@ -49,7 +49,7 @@ public class ExcelFileUtils {
 			cell.setCellValue(entity.getPaymentModeRef() == null ? "" : entity.getPaymentModeRef());
 			
 			cell = row.createCell(6);
-			cell.setCellValue(entity.getPaymentDate() == null ? DateUtils.stringToDate("00-00-0000") : entity.getPaymentDate());
+			cell.setCellValue(entity.getPaymentDate() == null ? "" : DateUtils.dateToString(entity.getPaymentDate()));
 			
 			cell = row.createCell(7);
 			cell.setCellValue(entity.getPaymentByName() == null ? "" : entity.getPaymentByName());
@@ -61,7 +61,7 @@ public class ExcelFileUtils {
 			cell.setCellValue(entity.getCancelRemarks() == null ? "" : entity.getCancelRemarks());
 			
 			cell = row.createCell(10);
-			cell.setCellValue(entity.getCreatedDate() == null ? DateUtils.stringToDate("00-00-0000") : entity.getCreatedDate());
+			cell.setCellValue(entity.getCreatedDate() == null ? "" : DateUtils.dateToString(entity.getCreatedDate()));
 			
 			cell = row.createCell(11);
 			cell.setCellValue(entity.getCreatedByName() == null ? "" : entity.getCreatedByName());

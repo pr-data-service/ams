@@ -119,13 +119,14 @@ public class EmailServiceImpl implements EmailService {
 		emailSender.send(message);
 	}
 
+	@Override
 	public void sendSimpleMessage(EmailProps emailProps)
 			throws MessagingException {
 		MimeMessage message = emailSender.createMimeMessage();
 
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-		helper.setFrom("pradyut.bca15@gmail.com");
+		helper.setFrom("pradyut.april@gmail.com");
 		helper.setTo(emailProps.getTo());
 		helper.setSubject(emailProps.getSubject());
 		helper.setText(emailProps.getText());
