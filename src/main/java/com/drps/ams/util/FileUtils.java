@@ -95,7 +95,7 @@ public class FileUtils {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
 		
-		String fileName = "payment-receipt_"+flatDetailsEntity.getFlatNo().replaceAll("/", "-")+"_"+ monthYear;
+		String fileName = "payment-receipt_"+ monthYear+"_"+entity.getBillNo();
 		if (entity.getIsCanceled() != null && entity.getIsCanceled()) {
 			deleteFile(path + "/" +fileName + ".pdf");
 			fileName = fileName + "_canceled";
@@ -122,11 +122,11 @@ public class FileUtils {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
 		
-		String fileName = "vouchar_"+ monthYear;
-//		if (entity.getIsCanceled() != null && entity.getIsCanceled()) {
-//			deleteFile(path + "/" +fileName + ".pdf");
-//			fileName = fileName + "_canceled";
-//		}
+		String fileName = "vouchar_"+ monthYear+"_"+entity.getVoucherNo();
+		if (entity.getIsCanceled() != null && entity.getIsCanceled()) {
+			deleteFile(path + "/" +fileName + ".pdf");
+			fileName = fileName + "_canceled";
+		}
 		path = path + "/" + fileName + ".pdf";
 		return path;
 	}
