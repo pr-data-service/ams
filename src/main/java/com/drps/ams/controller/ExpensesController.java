@@ -83,4 +83,20 @@ public class ExpensesController {
 		logger.info("AMS - ExpensesController cancel");
 		return ResponseEntity.status(HttpStatus.OK).body(expensesService.cancel(paymentCancel));		
 	}
+	
+	@GetMapping(value = "/voucher_by_month/get")
+	public ResponseEntity<ApiResponseEntity> getVoucherByMonths (){
+		logger.info("AMS - ExpensesController getVoucherByMonths");		
+		return ResponseEntity.status(HttpStatus.OK).body(expensesService.getVoucherByMonths());
+	}
+	
+	
+	@GetMapping(value = "/voucher/download_zip/{fn}")
+	public void downloadVoucherZip(@PathVariable("fn") String folderName,
+			HttpServletRequest request, HttpServletResponse response
+			) throws Exception {
+		logger.info("AMS - ExpensesController downloadZip");	
+		File file = expensesService.downloadZip(folderName);
+		Utils.downloadPdfFile(request, response, file);
+	}
 }

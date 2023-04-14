@@ -23,6 +23,7 @@ import com.drps.ams.dto.FlatDetailsDTO;
 import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentDTO;
 import com.drps.ams.dto.RequestParamDTO;
+import com.drps.ams.dto.VoucherByMonthDTO;
 import com.drps.ams.entity.EventsEntity;
 import com.drps.ams.entity.ExpenseItemsEntity;
 import com.drps.ams.entity.ExpensesEntity;
@@ -41,6 +42,7 @@ import com.drps.ams.service.ExpensesService;
 import com.drps.ams.service.NotesService;
 import com.drps.ams.service.VoucherNoService;
 import com.drps.ams.util.Utils;
+import com.drps.ams.util.ZipFileUtils;
 import com.drps.pdf.ExpenseVoucherPDF;
 import com.drps.pdf.PaymentReceiptPDF;
 import com.drps.ams.util.ApiConstants;
@@ -264,6 +266,33 @@ public class ExpensesServiceImpl implements ExpensesService {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
 		}
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS));
+	}
+	
+	@Override
+	public ApiResponseEntity getVoucherByMonths() {
+		UserContext userContext = Utils.getUserContext();
+		List <VoucherByMonthDTO> dtoList = new ArrayList<VoucherByMonthDTO>();
+		
+		String sessionName = userContext.getSessionDetailsEntity().getName();
+		String path = FILE + "/" + sessionName;
+		File parentFolder = new File(path);
+		File []folderAndFiles = parentFolder.listFiles();
+		
+		for (File file : folderAndFiles) {
+			if(file.isDirectory()) {
+				VoucherByMonthDTO ps = new VoucherByMonthDTO();
+				ps.setFolderName(file.getName());
+//				ps.setFolderPath(path+"/"+file.getName());
+				dtoList.add(ps);
+			}
+		}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dtoList);
+	}
+	
+	@Override
+	public File downloadZip (String folderName) throws Exception {
+		UserContext userContext = Utils.getUserContext();
+		return ZipFileUtils.createZip(userContext, FILE, folderName);
 	}
 	
 }

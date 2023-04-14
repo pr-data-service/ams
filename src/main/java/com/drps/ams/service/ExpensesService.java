@@ -27,4 +27,8 @@ public interface ExpensesService {
 
 	ApiResponseEntity cancel(@NonNull PaymentOrVoucharCancelDTO cancel) throws Exception;
 
+	ApiResponseEntity getVoucherByMonths();
+
+	File downloadZip(String folderName) throws Exception;
+
 }

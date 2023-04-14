@@ -39,6 +39,7 @@ import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentSaveDTO;
 import com.drps.ams.service.PaymentService;
+import com.drps.ams.service.VoucherNoService;
 import com.drps.ams.util.Utils;
 
 @RestController
@@ -49,6 +50,9 @@ public class PaymentController {
 	
 	@Autowired
 	PaymentService paymentService;
+	
+	@Autowired
+	VoucherNoService voucherNoService;
 	
 	@GetMapping(value = "/add_page/get/{id}")
 	public ResponseEntity<ApiResponseEntity> getAddPageDetails(@PathVariable("id") Long id) throws Exception {
