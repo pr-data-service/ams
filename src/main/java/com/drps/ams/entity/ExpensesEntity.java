@@ -48,11 +48,11 @@ public class ExpensesEntity {
 	@Column(name = "EXPENSE_DATE")
 	private Date expenseDate;
 	
-//	@Column(name = "IS_CANCELED")
-//	private Boolean isCanceled;
-//	
-//	@Column(name = "CANCEL_REMARKS")
-//	private String cancelRemarks;
+	@Column(name = "IS_CANCELED")
+	private Boolean isCanceled;
+	
+	@Column(name = "CANCEL_REMARKS")
+	private String cancelRemarks;
 	
 	@Column(name = "VOUCHER_NO")
 	private String voucherNo;

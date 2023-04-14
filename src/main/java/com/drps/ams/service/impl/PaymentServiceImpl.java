@@ -23,7 +23,7 @@ import com.drps.ams.dbquery.QueryMaker;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.EventsDTO;
 import com.drps.ams.dto.MiscellaneousFieldDTO;
-import com.drps.ams.dto.PaymentCancelDTO;
+import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentDTO;
 import com.drps.ams.dto.PaymentDetailsDTO;
 import com.drps.ams.dto.PaymentSaveDTO;
@@ -65,7 +65,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 	private static final Logger logger = LogManager.getLogger(PaymentServiceImpl.class);
 
-	@Value("${file.download.path}")
+	@Value("${payment-receipt.storage.path}")
 	String FILE;
 	
 	@Autowired
@@ -339,7 +339,7 @@ public class PaymentServiceImpl implements PaymentService {
 				List<EventsEntity> eventList = eventsRepository.findAll();
 				Map<Long, String> eventListMap = eventList.stream().collect(Collectors.toMap(EventsEntity::getId, EventsEntity::getName));
 				
-				String filePath = FileUtils.prepairFilePath(userContext, FILE, entity, flatDetailsEntity);
+				String filePath = FileUtils.prepairFilePathForPaymentReceipt(userContext, FILE, entity, flatDetailsEntity);
 				PaymentReceiptPDF pdf = new PaymentReceiptPDF(filePath, entity, paymentItemList, result, eventListMap);
 				file = pdf.getFile();
 				
@@ -350,7 +350,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Transactional
 	@Override
-	public ApiResponseEntity cancel(@NonNull PaymentCancelDTO paymentCancel) throws Exception {
+	public ApiResponseEntity cancel(@NonNull PaymentOrVoucharCancelDTO paymentCancel) throws Exception {
 		UserContext userContext = Utils.getUserContext();
 		
 		if (paymentCancel.getId() > 0) {

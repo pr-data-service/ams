@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.drps.ams.dto.ApiResponseEntity;
-import com.drps.ams.dto.PaymentCancelDTO;
+import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentSaveDTO;
 import com.drps.ams.service.PaymentService;
 import com.drps.ams.util.Utils;
@@ -81,7 +81,7 @@ public class PaymentController {
 	}
 	
 	@PatchMapping(value = "/cancel")
-	public ResponseEntity<ApiResponseEntity> cancel(@NonNull @RequestBody PaymentCancelDTO paymentCancel) throws Exception {
+	public ResponseEntity<ApiResponseEntity> cancel(@NonNull @RequestBody PaymentOrVoucharCancelDTO paymentCancel) throws Exception {
 		logger.info("AMS - PaymentController cancel");
 		return ResponseEntity.status(HttpStatus.OK).body(paymentService.cancel(paymentCancel));		
 	}

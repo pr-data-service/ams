@@ -83,7 +83,7 @@ public class DashboardServiceImpl implements DashboardService {
 			if(entity != null) {
 				mapObj = new HashMap<>();
 				mapObj.put("name", entity.getName());
-				mapObj.put("expanse", expenseList.stream().filter( f -> f.getEventId() == entity.getId()).mapToDouble( d -> d.getAmount()).sum());
+				mapObj.put("expense", expenseList.stream().filter( f -> f.getEventId() == entity.getId()).mapToDouble( d -> d.getAmount()).sum());
 				mapObj.put("collection", list.stream().filter( f -> f.getEventId() == entity.getId()).mapToDouble( d -> d.getAmount()).sum());
 				rsltList.add(mapObj);
 			}

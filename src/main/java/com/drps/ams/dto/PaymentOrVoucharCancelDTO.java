@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain=true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentCancelDTO {
+public class PaymentOrVoucharCancelDTO {
 	
 	private Long id;
 	private String cancelRemarks;

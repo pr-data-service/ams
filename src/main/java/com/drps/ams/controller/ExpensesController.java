@@ -11,8 +11,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.ExpensesDTO;
+import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.service.ExpensesService;
 import com.drps.ams.util.Utils;
 
@@ -69,9 +72,15 @@ public class ExpensesController {
 	public void download(HttpServletRequest request, HttpServletResponse response, 
 				@PathVariable("id") Long id,
 				@RequestParam(name="params", required = false) String reqParams) throws Exception {
-		logger.info("AMS - PaymentController download");
+		logger.info("AMS - ExpensesController download");
 		
 		File file = expensesService.getFileToDownload(id);
 		Utils.downloadPdfFile(request, response, file);
+	}
+	
+	@PatchMapping(value = "/cancel")
+	public ResponseEntity<ApiResponseEntity> cancel(@NonNull @RequestBody PaymentOrVoucharCancelDTO paymentCancel) throws Exception {
+		logger.info("AMS - ExpensesController cancel");
+		return ResponseEntity.status(HttpStatus.OK).body(expensesService.cancel(paymentCancel));		
 	}
 }

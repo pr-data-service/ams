@@ -37,7 +37,7 @@ import net.bytebuddy.asm.Advice.This;
  * @author 002ZX2744
  *
  */
-public class ExpanseVoucherPDF {
+public class ExpenseVoucherPDF {
 
 	private static String FILE = "C:/Users/002ZX2744/Desktop/TEMP/pdf/expanse-voucher.pdf";
 	private static Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 16, Font.BOLD);
@@ -66,7 +66,7 @@ public class ExpanseVoucherPDF {
     private static Map<String, Object> result;
     private static Map<Long, String> eventListMap;
     
-    public ExpanseVoucherPDF(String filePath, ExpensesEntity entity, List<ExpenseItemsEntity> expenseItemList, 
+    public ExpenseVoucherPDF(String filePath, ExpensesEntity entity, List<ExpenseItemsEntity> expenseItemList, 
     		Map<String, Object> result, Map<Long, String> eventListMap) {
     	this.FILE = filePath;
     	this.entity = entity;
@@ -129,10 +129,15 @@ public class ExpanseVoucherPDF {
 	}
 	
 	private static void addHeaderContent(PdfPTable table) {
-
+		boolean isCanceled = entity.getIsCanceled() != null ? entity.getIsCanceled() : false;
+		
     	PdfPCell cellOne = new PdfPCell();
-    	cellOne.setFixedHeight(60f);
+    	cellOne.setFixedHeight(isCanceled ? 75f : 60f);
+    	//cellOne.setFixedHeight(60f);
     	cellOne.setPaddingTop(5f);
+    	if(isCanceled) {
+    		cellOne.addElement(addCenterTextForHeader("*********** Voucher Canceled ***********", subFontNormal));	
+    	}
     	cellOne.addElement(addCenterTextForHeader("FLAT OWNER'S ASSOCIATION", titleFont));
     	cellOne.addElement(addCenterTextForHeader("Economy Apartment, Jhill Park, 48, J.C. Khan Road, Mankundu, Hooghly", subFontNormal));
     	cellOne.addElement(addCenterTextForHeader("DEBIT VOUCHER", subFontBold));
@@ -171,7 +176,8 @@ public class ExpanseVoucherPDF {
         addBodyContentTitle(tblBody);
         addBodyContentDesc(tblBody);
         
-        int totalLineCount = 10;
+        boolean isCanceled = entity.getIsCanceled() != null ? entity.getIsCanceled() : false;
+        int totalLineCount = isCanceled ? 9 : 10;
         int count = 1;
         if(!Objects.isNull(expenseItemList)) {
         	for(ExpenseItemsEntity itemEntity : expenseItemList) {

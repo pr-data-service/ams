@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.drps.ams.bean.UserContext;
+import com.drps.ams.entity.ExpensesEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.exception.FileStorageException;
@@ -76,7 +77,7 @@ public class FileUtils {
 		}
 	}
 	
-	public static String prepairFilePath(UserContext userContext, String path, PaymentEntity entity, FlatDetailsEntity flatDetailsEntity ){
+	public static String prepairFilePathForPaymentReceipt(UserContext userContext, String path, PaymentEntity entity, FlatDetailsEntity flatDetailsEntity ){
 		
 		// Create dir for Session
 		String sessionName = userContext.getSessionDetailsEntity().getName();
@@ -99,6 +100,33 @@ public class FileUtils {
 			deleteFile(path + "/" +fileName + ".pdf");
 			fileName = fileName + "_canceled";
 		}
+		path = path + "/" + fileName + ".pdf";
+		return path;
+	}
+	
+	public static String prepairFilePathForVouchar(UserContext userContext, String path, ExpensesEntity entity){
+		
+		// Create dir for Session
+		String sessionName = userContext.getSessionDetailsEntity().getName();
+		path = path + "/" + sessionName;
+		
+		// Month wise dir creation.....
+		String monthYear = DateUtils.dateToString(entity.getExpenseDate(), "MM-yyyy");
+		path = path + "/" + monthYear;
+		
+		Path fileStorageLocation = Paths.get(path).toAbsolutePath().normalize();
+
+        try {
+            Files.createDirectories(fileStorageLocation);
+        } catch (Exception ex) {
+            throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
+        }
+		
+		String fileName = "vouchar_"+ monthYear;
+//		if (entity.getIsCanceled() != null && entity.getIsCanceled()) {
+//			deleteFile(path + "/" +fileName + ".pdf");
+//			fileName = fileName + "_canceled";
+//		}
 		path = path + "/" + fileName + ".pdf";
 		return path;
 	}

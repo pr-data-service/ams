@@ -54,13 +54,14 @@ public class ApiConstants {
 	public static final String OBJECT_MAINTENANCE = "MAINTENANCE";
 	public static final String OBJECT_PAYMENT = "PAYMENT";
 	public static final String OBJECT_PAYMENT_DETAILS = "PAYMENT_DETAILS";
-	public static final String OBJECT_EXPANSE = "EXPANSE";
-	public static final String OBJECT_EXPANSE_ITEMS = "EXPANSE_ITEMS";
-	public static final String OBJECT_EXPANSE_NOTES = "NOTES";
+	public static final String OBJECT_EXPENSE = "EXPENSE";
+	public static final String OBJECT_EXPENSE_ITEMS = "EXPENSE_ITEMS";
+	public static final String OBJECT_EXPENSE_NOTES = "NOTES";
 	
-	public static final List<String> OBJECT_LIST = Arrays.asList(OBJECT_USER_DETAILS, OBJECT_FLAT_DETAILS, OBJECT_EVENTS,
-													OBJECT_MAINTENANCE, OBJECT_PAYMENT, OBJECT_PAYMENT_DETAILS, OBJECT_EXPANSE,
-													OBJECT_EXPANSE_ITEMS, OBJECT_EXPANSE_NOTES);
+	public static final List<String> OBJECT_LIST = 
+			Arrays.asList(OBJECT_USER_DETAILS, OBJECT_FLAT_DETAILS, OBJECT_EVENTS,
+						OBJECT_MAINTENANCE, OBJECT_PAYMENT, OBJECT_PAYMENT_DETAILS,
+						OBJECT_EXPENSE, OBJECT_EXPENSE_ITEMS, OBJECT_EXPENSE_NOTES);
 
 	
 	

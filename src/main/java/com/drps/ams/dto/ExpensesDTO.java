@@ -43,6 +43,8 @@ public class ExpensesDTO {
 	
 	@EntityFieldMapping(entity = EventsEntity.class, name = "name")
 	public String eventName;
+	private Boolean isCanceled;
+	private String cancelRemarks;
 	public Long apartmentId;
 	public Long createdBy;
 	public String createdByName;

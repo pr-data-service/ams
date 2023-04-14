@@ -361,7 +361,7 @@ public class PaymentReceiptPDF {
         addItemHeader(itemTable);
         
         boolean isCanceled = entity.getIsCanceled() != null ? entity.getIsCanceled() : false;
-        int maxRowCount = isCanceled ? 9 : 10;
+        int maxRowCount = isCanceled ? 8 : 9;
         addItemEmptyRow(itemTable, 1);
 //        addItemRow(itemTable, 1, "Maintenance for Jul, 2022 to Oct, 2022(4 Months)", 2000);
 //        addItemRow(itemTable, 2, "Development", 2200);
