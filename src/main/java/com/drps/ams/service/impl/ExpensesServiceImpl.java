@@ -292,7 +292,7 @@ public class ExpensesServiceImpl implements ExpensesService {
 	@Override
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
-		return ZipFileUtils.createZip(userContext, FILE, folderName);
+		return ZipFileUtils.createZip(userContext, FILE, folderName, "expense");
 	}
 	
 }

@@ -13,11 +13,11 @@ import com.drps.ams.bean.UserContext;
 import com.drps.ams.exception.FileStorageException;
 
 public class ZipFileUtils {
-    public static File createZip(UserContext userContext, String path, String folderName) throws Exception {
+    public static File createZip(UserContext userContext, String path, String folderName, String namePrefix) throws Exception {
     	String sessionName = userContext.getSessionDetailsEntity().getName();
 		path = path + "/" + sessionName;
         String folderPath = path+"/"+folderName;
-        String zipFilePath = path+"/"+folderName+".zip";
+        String zipFilePath = path+"/"+(namePrefix == null ? "" : namePrefix+"-")+folderName+".zip";
     	
     	
         FileOutputStream fos = new FileOutputStream(zipFilePath);

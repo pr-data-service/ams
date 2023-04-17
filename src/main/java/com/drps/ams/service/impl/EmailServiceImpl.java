@@ -36,6 +36,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import lombok.NonNull;
 
 /**
+ * GMail App Password link
+ * https://myaccount.google.com/apppasswords
+ */
+/**
  * @author prady
  *
  */
@@ -112,6 +116,11 @@ public class EmailServiceImpl implements EmailService {
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, emailSetupDetailsDto);
 	}
 
+	
+	/**
+	 * GMail App Password link
+	 * https://myaccount.google.com/apppasswords
+	 */
 	public void sendSimpleMessage(String to, String subject, String text) {
 		SimpleMailMessage message = new SimpleMailMessage();
 		message.setFrom("pradyut.bca15@gmail.com");
@@ -121,6 +130,10 @@ public class EmailServiceImpl implements EmailService {
 		emailSender.send(message);
 	}
 
+	/**
+	 * Required to set GMail App Password link
+	 * https://myaccount.google.com/apppasswords
+	 */
 	@Override
 	public void sendSimpleMessage(EmailProps emailProps) throws MessagingException {
 		MimeMessage message = emailSender.createMimeMessage();
@@ -133,7 +146,7 @@ public class EmailServiceImpl implements EmailService {
 		helper.setText(emailProps.getText());
 
 		FileSystemResource file = new FileSystemResource(new File(emailProps.getPathToAttachment()));
-		helper.addAttachment("Invoice", file);
+		helper.addAttachment("Invoice.pdf", file);
 
 		emailSender.send(message);
 	}

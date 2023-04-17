@@ -426,7 +426,7 @@ public class PaymentServiceImpl implements PaymentService {
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
 		maintenanceExcelByMonth(folderName);
-		return ZipFileUtils.createZip(userContext, FILE, folderName);
+		return ZipFileUtils.createZip(userContext, FILE, folderName, "payment");
 	}
 	
 	public void maintenanceExcelByMonth (String folderName) {
