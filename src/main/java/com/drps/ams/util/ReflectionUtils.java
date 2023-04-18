@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.drps.ams.annotation.EntityMapping;
 import com.drps.ams.annotation.FKEntityFieldMapping;
+import com.drps.ams.annotation.LinkEntityFieldMapping;
 import com.drps.ams.annotation.EntityFieldMapping;
 import com.drps.ams.dto.ListViewFieldDTO;
 
@@ -82,6 +83,13 @@ public class ReflectionUtils {
 		return map;
 	}
 	
+	public static Map<String, LinkEntityFieldMapping> getLinkEntityFieldMappingsMap(Class<?> cls) {
+		Map<String, LinkEntityFieldMapping> map = Arrays.asList(cls.getDeclaredFields())
+		.stream()
+		.filter( f -> f.getAnnotation(LinkEntityFieldMapping.class) != null).collect(Collectors.toMap(x -> x.getName(), x -> x.getAnnotation(LinkEntityFieldMapping.class)));
+		return map;
+	}
+	
 	public static <T> T getFKFieldMappingValueAnnotation(Class<?> cls, String fieldName, Class annotationClass) {
 		Field field = Arrays.asList(cls.getDeclaredFields())
 				.stream()
@@ -111,6 +119,15 @@ public class ReflectionUtils {
 		}
 	}
 	
+	public static Map<String, String> getLinkEntityFieldNames(Class trgtCls, Class srcCls) {
+
+		Map<String, String> map = Arrays.asList(trgtCls.getDeclaredFields())
+				.stream()
+				.filter( f -> f.getAnnotation(LinkEntityFieldMapping.class) != null &&  f.getAnnotation(LinkEntityFieldMapping.class).mappingEntity() == srcCls )
+				.collect(Collectors.toMap(x -> x.getName(), x -> "id"));
+		return map;
+	}
+	
 	public static Map<String, String> getFKFieldNames(Class trgtCls, Class srcCls) {
 //		Map<String, String> map = new HashMap<>();
 //		List<Field> fieldList = Arrays.asList(trgtCls.getDeclaredFields())
@@ -129,14 +146,14 @@ public class ReflectionUtils {
 	}
 	
 	public static void setFieldValue(Object srcObj, Object trgtObj) {
+		Map<String, String> linkFieldMap = ReflectionUtils.getLinkEntityFieldNames(trgtObj.getClass(), srcObj.getClass());
 		Map<String, String> fieldMap = ReflectionUtils.getFKFieldNames(trgtObj.getClass(), srcObj.getClass());
 		Field srcFld = null;
 		Field trgtFld = null;
-		for(String trgtFieldNm : fieldMap.keySet()) {
+		
+		for(String trgtFieldNm : linkFieldMap.keySet()) {
 			try {
-				srcFld = srcObj.getClass().getDeclaredField(fieldMap.get(trgtFieldNm));
-				srcFld.setAccessible(true);
-				Object val = srcFld.get(srcObj);
+				Object val = getFieldValue(srcObj, linkFieldMap.get(trgtFieldNm));
 				
 				trgtFld = trgtObj.getClass().getDeclaredField(trgtFieldNm);
 				trgtFld.setAccessible(true);
@@ -147,6 +164,51 @@ public class ReflectionUtils {
 			} catch (SecurityException e) {e.printStackTrace();
 			}
 		}
+		
+		
+		for(String trgtFieldNm : fieldMap.keySet()) {
+			try {
+				Object val = getFieldValue(srcObj, fieldMap.get(trgtFieldNm));
+				
+				trgtFld = trgtObj.getClass().getDeclaredField(trgtFieldNm);
+				trgtFld.setAccessible(true);
+				trgtFld.set(trgtObj, val);
+			} catch (IllegalArgumentException e) {e.printStackTrace();				
+			} catch (IllegalAccessException e) {e.printStackTrace();
+			} catch (NoSuchFieldException e) {e.printStackTrace();
+			} catch (SecurityException e) {e.printStackTrace();
+			}
+		}
+	}
+	
+	public static Object getFieldValue(Object srcObj, String fieldName) {
+		//CONCAT(firstName, lastName)
+		Field srcFld = null;
+		Object rtnVal = null;
+		try {
+			if(fieldName.trim().startsWith("CONCAT")) {
+				fieldName = fieldName.trim().replace("CONCAT", "").replace("(", "").replace(")", "");
+				
+				String value = "";
+				String []arr = fieldName.split(",");
+				for(String fld : arr) {
+					srcFld = srcObj.getClass().getDeclaredField(fld.trim());
+					srcFld.setAccessible(true);
+					value += value.length() == 0 ? String.valueOf(srcFld.get(srcObj)) : " " + String.valueOf(srcFld.get(srcObj));
+				}
+				rtnVal = value;
+			} else {
+				srcFld = srcObj.getClass().getDeclaredField(fieldName.trim());
+				srcFld.setAccessible(true);
+				rtnVal = srcFld.get(srcObj);
+			}
+		} catch (IllegalArgumentException e) {e.printStackTrace();				
+		} catch (IllegalAccessException e) {e.printStackTrace();
+		} catch (NoSuchFieldException e) {e.printStackTrace();
+		} catch (SecurityException e) {e.printStackTrace();
+		} catch (Exception e) {e.printStackTrace();
+		}
+		return rtnVal;
 	}
 
 	public static Object getValue(Class cls, Object srcObj, String fieldName){

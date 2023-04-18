@@ -4,8 +4,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,9 +29,9 @@ import com.drps.ams.dbquery.QueryMaker;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.EventsDTO;
 import com.drps.ams.dto.MiscellaneousFieldDTO;
-import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentDTO;
 import com.drps.ams.dto.PaymentDetailsDTO;
+import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentSaveDTO;
 import com.drps.ams.dto.PaymentSlipByMonthsDTO;
 import com.drps.ams.dto.RequestParamDTO;
@@ -65,7 +65,6 @@ import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.DateUtils;
 import com.drps.ams.util.ExcelFileUtils;
 import com.drps.ams.util.FileUtils;
-import com.drps.ams.util.ReflectionUtils;
 import com.drps.ams.util.Utils;
 import com.drps.ams.util.ZipFileUtils;
 import com.drps.pdf.PaymentReceiptPDF;
@@ -136,7 +135,7 @@ public class PaymentServiceImpl implements PaymentService {
 		RequestParamDTO reqParamDto = RequestParamDTO.getInstance(reqParams);
 		
 		List<PaymentDTO> rtnList = dbQueryExecuter.executeQuery(new QueryMaker(reqParamDto, PaymentDTO.class));
-		commonService.addPaymentByToDTO(rtnList);
+		//commonService.addPaymentByToDTO(rtnList);
 		commonService.addUserDetailsToDTO(rtnList, PaymentDTO.class);
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);

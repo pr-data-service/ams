@@ -10,6 +10,7 @@ import com.drps.ams.annotation.EntityFieldMapping;
 import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
+import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.util.DateUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -46,7 +47,10 @@ public class PaymentDTO {
 	private String billNo;
 	
 	public Long apartmentId;
+	@FKEntityFieldMapping(entity = UserDetailsEntity.class, join = FKEntityFieldMapping.LEFT_JOIN)
 	public Long paymentBy;
+	
+	@EntityFieldMapping(entity = UserDetailsEntity.class, name = "CONCAT(firstName, lastName)")
 	public String paymentByName;
 	public Long createdBy;	
 	public String createdByName;
