@@ -19,6 +19,9 @@ public interface FlatDetailsRepository extends JpaRepository<FlatDetailsEntity, 
 	@Query("SELECT f FROM FlatDetailsEntity f WHERE f.apartmentId = :apartmentId AND f.id IN (:flatIdList)")
 	List<FlatDetailsEntity> getFlatList(Long apartmentId, List<Long> flatIdList);
 	
+	@Query("SELECT f FROM FlatDetailsEntity f WHERE f.apartmentId = :apartmentId AND f.id NOT IN (:flatIdList)")
+	List<FlatDetailsEntity> getFlatListNotIn(Long apartmentId, List<Long> flatIdList);
+	
 	@Query("SELECT f FROM FlatDetailsEntity f WHERE f.apartmentId = :apartmentId")
 	List<FlatDetailsEntity> getAll(Long apartmentId);
 	

@@ -1,6 +1,7 @@
 package com.drps.ams.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,7 +132,7 @@ public class ExpenseHeadServiceImpl implements ExpenseHeadService {
 		
 		List<ExpenseHeadEntity> list = expenseHeadRepository.findByTitle(userContext.getApartmentId(), userContext.getSessionId(), expenseHeadDTO.getTitle());
 		if(list != null && expenseHeadDTO.getId() != null && expenseHeadDTO.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != expenseHeadDTO.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != expenseHeadDTO.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;

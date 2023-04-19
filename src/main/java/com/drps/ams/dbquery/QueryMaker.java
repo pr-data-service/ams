@@ -1,36 +1,23 @@
 package com.drps.ams.dbquery;
 
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
-import org.apache.el.util.ReflectionUtil;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.drps.ams.annotation.EntityFieldMapping;
 import com.drps.ams.annotation.FKEntityFieldMapping;
+import com.drps.ams.annotation.LinkEntityFieldMapping;
 import com.drps.ams.dto.ListViewFieldDTO;
 import com.drps.ams.dto.QueryOrderByDTO;
 import com.drps.ams.dto.RequestParamDTO;
-import com.drps.ams.entity.EventsEntity;
-import com.drps.ams.entity.ExpensesEntity;
-import com.drps.ams.entity.FlatDetailsEntity;
-import com.drps.ams.entity.MaintenanceEntity;
-import com.drps.ams.entity.PaymentDetailsEntity;
-import com.drps.ams.entity.PaymentEntity;
-import com.drps.ams.entity.SessionDetailsEntity;
 import com.drps.ams.util.DBConstants;
 import com.drps.ams.util.DateUtils;
+import com.drps.ams.util.ParameterVerifier;
 import com.drps.ams.util.ReflectionUtils;
 import com.drps.ams.util.Utils;
 
@@ -40,6 +27,7 @@ public class QueryMaker<T> {
 	private Class<T> rtnCls;
 	private Class root;
 	private Map<String, FKEntityFieldMapping> fkEntityFieldMap;
+	private Map<String, LinkEntityFieldMapping> linkEntityFieldMap;
 	
 	public QueryMaker(RequestParamDTO reqParamDto, Class<T> rtnCls) {
 		this.reqParamDto = reqParamDto;
@@ -47,6 +35,7 @@ public class QueryMaker<T> {
 		
 		this.root = ReflectionUtils.getRootEntity(rtnCls);
 		this.fkEntityFieldMap = ReflectionUtils.getFKEntityFieldMappingsMap(rtnCls);
+		this.linkEntityFieldMap = ReflectionUtils.getLinkEntityFieldMappingsMap(rtnCls);
 	}
 	
 	private String getSelectQry() {
@@ -54,6 +43,9 @@ public class QueryMaker<T> {
 		
 		List<Class<?>> entityList = new ArrayList<>();
 		entityList.add(root);
+		if(linkEntityFieldMap != null) {
+			entityList.addAll(linkEntityFieldMap.entrySet().stream().map( m -> m.getValue().mappingEntity()).collect(Collectors.toList()));	
+		}
 		if(fkEntityFieldMap != null) {
 			entityList.addAll(fkEntityFieldMap.entrySet().stream().map( m -> m.getValue().entity()).collect(Collectors.toList()));	
 		}
@@ -66,6 +58,27 @@ public class QueryMaker<T> {
 	private String getFromQuery() {
 		StringBuilder sb = new StringBuilder("FROM");
 		sb.append(" ").append(root.getSimpleName()).append( " ").append(Utils.wordCamelCase(root.getSimpleName()));
+		
+		if(linkEntityFieldMap != null && !linkEntityFieldMap.isEmpty()) {
+			String joinQry = "";
+			LinkEntityFieldMapping link = null;
+			for(String fldNm : linkEntityFieldMap.keySet()) {
+				link = linkEntityFieldMap.get(fldNm);
+				joinQry = "LEFT JOIN "
+						+ link.entity().getSimpleName() + " "+ Utils.wordCamelCase(link.entity().getSimpleName())
+						+ " ON "
+						+ Utils.wordCamelCase(root.getSimpleName()) + ".id" 
+						+ " = " + Utils.wordCamelCase(link.entity().getSimpleName()) + "." + link.mappingFieldL();
+				sb.append(" ").append(joinQry);
+				
+				joinQry = "LEFT JOIN "
+						+ link.mappingEntity().getSimpleName() + " "+ Utils.wordCamelCase(link.mappingEntity().getSimpleName())
+						+ " ON "
+						+ Utils.wordCamelCase(link.entity().getSimpleName()) + "." + link.mappingFieldR()
+						+ " = " + Utils.wordCamelCase(link.mappingEntity().getSimpleName()) + ".id";
+				sb.append(" ").append(joinQry);
+			}
+		}
 		
 		if(fkEntityFieldMap != null && fkEntityFieldMap.size() > 0) {
 			//INNER JOIN EventsEntity eventsEntity ON paymentDetailsEntity.eventId = eventsEntity.id
@@ -144,12 +157,12 @@ public class QueryMaker<T> {
 	
 	private String getParentRecordClause() {
 		String clause = "";
-		if(reqParamDto != null && reqParamDto.getParentObject() != null && !reqParamDto.getParentObject().isBlank()) {
+		if(reqParamDto != null && !ParameterVerifier.isBlank(reqParamDto.getParentObject())) {
 			String rootEntity = Utils.wordCamelCase(root.getSimpleName());
 			clause += rootEntity+".parentObject = '"+ reqParamDto.getParentObject()+"'";
 		}
 		
-		if(reqParamDto != null && reqParamDto.getParentFieldName() != null && !reqParamDto.getParentFieldName().isBlank()
+		if(reqParamDto != null && !ParameterVerifier.isBlank(reqParamDto.getParentFieldName())
 				&& reqParamDto.getParentRecordId() > 0) {
 			String rootEntity = Utils.wordCamelCase(root.getSimpleName());
 			if(!clause.isEmpty()) {
@@ -221,7 +234,8 @@ public class QueryMaker<T> {
 				
 				if(cls != null) {
 					if(DBConstants.FIELD_TYPE_TEXT.equalsIgnoreCase(fieldDto.getType())) {
-						clause = Utils.wordCamelCase(cls.getSimpleName()) + "."+fieldName + " LIKE CONCAT('%', :" + fieldDto.getDataField() + ", '%')";
+						//clause = Utils.wordCamelCase(cls.getSimpleName()) + "."+fieldName + " LIKE CONCAT('%', :" + fieldDto.getDataField() + ", '%')";
+						clause = processFieldName(Utils.wordCamelCase(cls.getSimpleName()), fieldName) + " LIKE CONCAT('%', :" + fieldDto.getDataField() + ", '%')";
 					} else if(DBConstants.FIELD_TYPE_DATE.equalsIgnoreCase(fieldDto.getType())) {
 						clause = Utils.wordCamelCase(cls.getSimpleName()) + "."+fieldName + " BETWEEN :from" + fieldDto.getDataField() + " AND :to" + fieldDto.getDataField();
 					} else {
@@ -236,6 +250,22 @@ public class QueryMaker<T> {
 			e.printStackTrace();
 		}			
 		return clause;
+	}
+	
+	String processFieldName(String entityRef, String fieldName) {
+		
+		if(fieldName.startsWith("CONCAT")) {
+			String arr[] = fieldName.replace("CONCAT", "").replace("(", "").replace(")", "").split(",");
+			String newFieldNm = "";
+			for(String fld : arr) {
+				newFieldNm += newFieldNm.length() == 0 ? entityRef + "." + fld : ", " + entityRef + "." + fld;
+			}
+			
+			fieldName = "CONCAT(" + newFieldNm + ")";
+		} else {
+			fieldName = entityRef + "." + fieldName;
+		}
+		return fieldName;
 	}
 	
 	public List<T> convertData(List<Object[]> list) {

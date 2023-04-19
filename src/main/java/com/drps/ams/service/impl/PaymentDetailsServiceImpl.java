@@ -102,56 +102,97 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
                 .comparing(PaymentDetailsDTO::getPaymentYear, Comparator.nullsFirst(Comparator.naturalOrder()))
                 .thenComparing(PaymentDetailsDTO::getPaymentMonth, Comparator.nullsFirst(Comparator.naturalOrder()));
 		
-		rtnList =  rtnList.stream().sorted(compareByYearThenMonth.reversed()).toList();
+		rtnList =  rtnList.stream().sorted(compareByYearThenMonth.reversed()).collect(Collectors.toList());
 		commonService.addUserDetailsToDTO(rtnList, PaymentDetailsDTO.class);
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
 	}
 	
 	@Override
 	public ApiResponseEntity getDuesListView(String reqParams) throws Exception {
+		UserContext userContext = Utils.getUserContext();
 		List<PaymentDetailsDTO> rtnList = new ArrayList<>();
 		RequestParamDTO reqParamDto = RequestParamDTO.getInstance(reqParams);
 		
-		if(reqParamDto.getParentRecordId() <= 0) {
-			RequestParamDTO reqParamDtoTemp = RequestParamDTO.getInstance(reqParams);
-			if(reqParamDtoTemp.getSeacrchFields() != null) {
-				reqParamDtoTemp.setSeacrchFields(reqParamDtoTemp.getSeacrchFields().stream().filter( f -> "flatNo".equals(f.getDataField())).toList());
-			}
-			List<FlatDetailsDTO> list = dbQueryExecuter.executeQuery(new QueryMaker<FlatDetailsDTO>(reqParamDtoTemp, FlatDetailsDTO.class));
+		if(ApiConstants.OBJECT_EVENTS.equals(reqParamDto.getObject())) {
+			Long eventId = reqParamDto.getId();
+			EventsEntity eventsEntity = eventsRepository.findById(eventId).get();
 			
-			for(FlatDetailsDTO dto : list) {
-				rtnList.addAll(getDuesList(dto.getId(), new Object[] {dto.getFlatNo()}));
+			List<Object[]> list = paymentDetailsRepository.getEventPaymentList(userContext.getApartmentId(), eventId);
+			List<Long> paymentFlatIdList = list.stream().map( m -> Long.valueOf(String.valueOf(m[0]))).collect(Collectors.toList());
+			List<FlatDetailsEntity> flatNotPaymentList = flatDetailsRepository.getFlatListNotIn(userContext.getApartmentId(), paymentFlatIdList);
+			
+			
+			PaymentDetailsDTO payDtlsDto = null;
+			long tempRecId = 1;
+			for(Object[] arrObj : list) {
+				payDtlsDto = new PaymentDetailsDTO();
+				payDtlsDto.setId(tempRecId++);
+				payDtlsDto.setFlatId(Long.valueOf(String.valueOf(arrObj[0])));
+				payDtlsDto.setFlatNo(String.valueOf(arrObj[1]));
+				payDtlsDto.setAmount(eventsEntity.getAmountPerFlat() - Double.valueOf(String.valueOf(arrObj[2])));
+				if(payDtlsDto.getAmount() > 0) {
+					rtnList.add(payDtlsDto);
+				}
 			}
-			long id = 1;
-			for(PaymentDetailsDTO dto : rtnList) {
-				dto.setId(id++);
+			
+			for(FlatDetailsEntity entity : flatNotPaymentList) {
+				payDtlsDto = new PaymentDetailsDTO();
+				payDtlsDto.setId(tempRecId++);
+				payDtlsDto.setFlatId(entity.getId());
+				payDtlsDto.setFlatNo(entity.getFlatNo());
+				payDtlsDto.setAmount(eventsEntity.getAmountPerFlat());
+				if(payDtlsDto.getAmount() > 0) {
+					rtnList.add(payDtlsDto);
+				}
 			}
+			
+			commonService.addOwnersNameAndContactNoToDTO(rtnList);
+			
 		} else {
-			rtnList = getDuesList(reqParamDto.getParentRecordId());
-		}
-		
-		if(reqParamDto.getSeacrchFields() != null) {
-			List<ListViewFieldDTO> filterList = reqParamDto.getSeacrchFields().stream().filter( f -> !"flatNo".equals(f.getDataField())).toList();
-					
-			for(ListViewFieldDTO fieldDto: filterList) {
-				try {
-					if(fieldDto != null && fieldDto.getValue() != null) {
-						if("amount".equals(fieldDto.getDataField()) && !fieldDto.getValue().toString().trim().isEmpty()) {
-							rtnList = rtnList.stream().filter( f -> f.getAmount() == Double.parseDouble(fieldDto.getValue().toString())).toList();
-						} else if("paymentForSessionName".equals(fieldDto.getDataField())) {
-							rtnList = rtnList.stream().filter( f -> f.getPaymentForSessionName().contains(fieldDto.getValue().toString())).toList();
-						} else if("paymentMonthName".equals(fieldDto.getDataField())) {
-							rtnList = rtnList.stream().filter( f -> f.getPaymentMonthName().contains(fieldDto.getValue().toString())).toList();
-						} else if("paymentYear".equals(fieldDto.getDataField()) && !fieldDto.getValue().toString().trim().isEmpty()) {
-							rtnList = rtnList.stream().filter( f -> f.getPaymentYear() == Integer.parseInt(fieldDto.getValue().toString())).toList();
-						} 
+			if(reqParamDto.getParentRecordId() <= 0) {
+				RequestParamDTO reqParamDtoTemp = RequestParamDTO.getInstance(reqParams);
+				if(reqParamDtoTemp.getSeacrchFields() != null) {
+					reqParamDtoTemp.setSeacrchFields(reqParamDtoTemp.getSeacrchFields().stream().filter( f -> "flatNo".equals(f.getDataField())).toList());
+				}
+				List<FlatDetailsDTO> list = dbQueryExecuter.executeQuery(new QueryMaker<FlatDetailsDTO>(reqParamDtoTemp, FlatDetailsDTO.class));
+				
+				for(FlatDetailsDTO dto : list) {
+					rtnList.addAll(getDuesList(dto.getId(), new Object[] {dto.getFlatNo()}));
+				}
+				long id = 1;
+				for(PaymentDetailsDTO dto : rtnList) {
+					dto.setId(id++);
+				}
+			} else {
+				rtnList = getDuesList(reqParamDto.getParentRecordId());
+			}
+			
+			if(reqParamDto.getSeacrchFields() != null) {
+				List<ListViewFieldDTO> filterList = reqParamDto.getSeacrchFields().stream().filter( f -> !"flatNo".equals(f.getDataField())).collect(Collectors.toList());
+						
+				for(ListViewFieldDTO fieldDto: filterList) {
+					try {
+						if(fieldDto != null && fieldDto.getValue() != null) {
+							if("amount".equals(fieldDto.getDataField()) && !fieldDto.getValue().toString().trim().isEmpty()) {
+								rtnList = rtnList.stream().filter( f -> f.getAmount() == Double.parseDouble(fieldDto.getValue().toString())).collect(Collectors.toList());
+							} else if("paymentForSessionName".equals(fieldDto.getDataField())) {
+								rtnList = rtnList.stream().filter( f -> f.getPaymentForSessionName().contains(fieldDto.getValue().toString())).collect(Collectors.toList());
+							} else if("paymentMonthName".equals(fieldDto.getDataField())) {
+								rtnList = rtnList.stream().filter( f -> f.getPaymentMonthName().contains(fieldDto.getValue().toString())).collect(Collectors.toList());
+							} else if("paymentYear".equals(fieldDto.getDataField()) && !fieldDto.getValue().toString().trim().isEmpty()) {
+								rtnList = rtnList.stream().filter( f -> f.getPaymentYear() == Integer.parseInt(fieldDto.getValue().toString())).collect(Collectors.toList());
+							} 
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
 			}
 		}
 		
+		rtnList = rtnList.stream()
+		        .sorted(Comparator.comparingLong(PaymentDetailsDTO::getId))
+		        .collect(Collectors.toList());
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
 	}
@@ -187,16 +228,7 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 		}
 		List<PaymentDetailsDTO> duesList = new ArrayList<>();
 		
-		PaymentDetailsEntity lastPayment = null;
-		List<PaymentDetailsEntity> list = paymentDetailsRepository.findByFlatIdForDueList(userContext.getApartmentId(), flatId);
-		list = list.stream().filter( f -> f.getEventId() == 1).collect(Collectors.toList());
-		if(list != null && !list.isEmpty()) {			
-			Comparator<PaymentDetailsEntity> compareByYearThenMonth = Comparator
-	                .comparing(PaymentDetailsEntity::getPaymentYear)
-	                .thenComparing(PaymentDetailsEntity::getPaymentMonth);
-		
-			lastPayment =  list.stream().sorted(compareByYearThenMonth.reversed()).limit(1).findAny().orElse(null);
-		}
+		PaymentDetailsEntity lastPayment = getLastPaymentForMaintenance(flatId);
 		
 		LocalDate currentDate = LocalDate.now(ZoneId.systemDefault());
 		SessionDetailsEntity sessionDtls = sessionDetailsRepository.findById(userContext.getSessionId()).get();
@@ -262,15 +294,14 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 		return duesList;
 	}
 
-	@SuppressWarnings("removal")
 	@Override
-	public ApiResponseEntity save(@NonNull PaymentDetailsDTO paymentDetailsDto) {
+	public ApiResponseEntity saveLastPaymentDate(@NonNull PaymentDetailsDTO paymentDetailsDto) {
 		UserContext userContext = Utils.getUserContext();
 		
 		if(paymentDetailsDto.getFlatId() > 0) {
 			PaymentDetailsEntity entity = new PaymentDetailsEntity();
 			
-			List<PaymentDetailsEntity> list = paymentDetailsRepository.findByFlatId(userContext.getApartmentId(), paymentDetailsDto.getFlatId());
+			List<PaymentDetailsEntity> list = paymentDetailsRepository.getMaintenanceList(userContext.getApartmentId(), paymentDetailsDto.getFlatId());
 			if(list != null && !list.isEmpty()) {
 				PaymentDetailsEntity pdEntity = list.stream().filter( f -> ApiConstants.INVALID_RECORD_ID == f.getPaymentId() 
 										&& (f.getPaymentForSessionId() == null || f.getPaymentForSessionId() == 0)
@@ -298,5 +329,59 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 		}
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, paymentDetailsDto);
+	}
+	
+	@Override
+	public PaymentDetailsEntity getLastPaymentForMaintenance(Long flatId) {
+		UserContext userContext = Utils.getUserContext();
+		
+		PaymentDetailsEntity lastPayment = null;
+		List<PaymentDetailsEntity> list = paymentDetailsRepository.findByFlatIdForDueList(userContext.getApartmentId(), flatId);
+		list = list.stream().filter( f -> f.getEventId() == 1).collect(Collectors.toList());
+		if(list != null && !list.isEmpty()) {			
+			Comparator<PaymentDetailsEntity> compareByYearThenMonth = Comparator
+	                .comparing(PaymentDetailsEntity::getPaymentYear)
+	                .thenComparing(PaymentDetailsEntity::getPaymentMonth);
+		
+			lastPayment =  list.stream().sorted(compareByYearThenMonth.reversed()).limit(1).findAny().orElse(null);
+		}
+		return lastPayment;
+	}
+	
+	@Override
+	public ApiResponseEntity getDuesListForAdvancePayment(Long flatId, int month, int year) throws Exception {
+		UserContext userContext = Utils.getUserContext();
+		PaymentDetailsDTO payDtlsDto = null;
+		if(flatId != null && flatId > 0) {
+			FlatDetailsEntity flatDetailsEntity = flatDetailsRepository.findById(flatId).orElse(null);
+			String flatNo = flatDetailsEntity != null ? flatDetailsEntity.getFlatNo() : "";
+			
+			payDtlsDto = new PaymentDetailsDTO();
+			payDtlsDto.setId(Long.valueOf(1));
+			payDtlsDto.setFlatId(flatId);
+			payDtlsDto.setFlatNo(flatNo);
+			
+			if(month <= 0 && year <= 0) {
+				PaymentDetailsEntity lastPayment = getLastPaymentForMaintenance(flatId);
+				if(lastPayment != null) {
+					month = lastPayment.getPaymentMonth();
+					year = lastPayment.getPaymentYear();
+				}
+			}
+			
+			if(month <= 0 && year <= 0) {
+				month = userContext.getSessionDetailsEntity().getToDate().getMonth()+1;
+				year = userContext.getSessionDetailsEntity().getToDate().getYear()+1900;
+			}
+			
+			payDtlsDto.setPaymentMonth(month == 12 ? 1 : month+1);
+			payDtlsDto.setPaymentYear(month == 12 ? year+1 : year);
+			
+			List<PaymentDetailsDTO> duesList = new ArrayList<>();
+			duesList.add(payDtlsDto);
+			sessionDetailsService.addSessionIdAndMaintenanceOnList(duesList, flatId);
+		}
+		
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, payDtlsDto);
 	}
 }

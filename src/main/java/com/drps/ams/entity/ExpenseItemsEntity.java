@@ -41,6 +41,9 @@ public class ExpenseItemsEntity {
 	@Column(name = "AMOUNT")
 	private Double amount;
 	
+	@Column(name = "IS_CANCELED")
+	private Boolean isCanceled;
+	
 	@Column(name = "SESSION_ID")
 	private Long sessionId;	
 	

@@ -46,6 +46,8 @@ public class MaintenanceDTO {
 	@EntityFieldMapping(entity = SessionDetailsEntity.class, name = "name")
 	public String sessionName;
 	
+	public Boolean isActive;
+	
 	public Long apartmentId;
 	public Long createdBy;	
 	public String createdByName;	

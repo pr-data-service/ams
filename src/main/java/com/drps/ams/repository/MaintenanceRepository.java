@@ -28,4 +28,10 @@ public interface MaintenanceRepository  extends JpaRepository<MaintenanceEntity,
 	
 	@Query("SELECT f FROM MaintenanceEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
 	List<MaintenanceEntity> getAll(Long apartmentId, Long sessionId, Pageable pageable);
+	
+	@Query("SELECT f FROM MaintenanceEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId AND f.flatId = :flatId AND f.lastActiveMaintId = :lastActiveMaintId")
+	List<MaintenanceEntity> getAll(Long apartmentId, Long sessionId, Long flatId, Long lastActiveMaintId);
+	
+	@Query("SELECT f FROM MaintenanceEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId AND f.flatId = :flatId AND f.lastActiveMaintId = :lastActiveMaintId")
+	MaintenanceEntity findByLastActiveMaintId(Long apartmentId, Long sessionId, Long flatId, Long lastActiveMaintId);
 }

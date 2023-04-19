@@ -36,9 +36,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.drps.ams.dto.ApiResponseEntity;
-import com.drps.ams.dto.PaymentCancelDTO;
+import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentSaveDTO;
 import com.drps.ams.service.PaymentService;
+import com.drps.ams.service.VoucherNoService;
 import com.drps.ams.util.Utils;
 
 @RestController
@@ -49,6 +50,9 @@ public class PaymentController {
 	
 	@Autowired
 	PaymentService paymentService;
+	
+	@Autowired
+	VoucherNoService voucherNoService;
 	
 	@GetMapping(value = "/add_page/get/{id}")
 	public ResponseEntity<ApiResponseEntity> getAddPageDetails(@PathVariable("id") Long id) throws Exception {
@@ -81,7 +85,7 @@ public class PaymentController {
 	}
 	
 	@PatchMapping(value = "/cancel")
-	public ResponseEntity<ApiResponseEntity> cancel(@NonNull @RequestBody PaymentCancelDTO paymentCancel) throws Exception {
+	public ResponseEntity<ApiResponseEntity> cancel(@NonNull @RequestBody PaymentOrVoucharCancelDTO paymentCancel) throws Exception {
 		logger.info("AMS - PaymentController cancel");
 		return ResponseEntity.status(HttpStatus.OK).body(paymentService.cancel(paymentCancel));		
 	}
@@ -96,4 +100,20 @@ public class PaymentController {
 		File file = paymentService.getFileToDownload(id);
 		Utils.downloadPdfFile(request, response, file);
 	}
+	
+	@GetMapping(value = "/slip_by_months/get")
+	public ResponseEntity<ApiResponseEntity> getSlipByMonths (){
+		logger.info("AMS - PaymentController getSlipByMonths");		
+		return ResponseEntity.status(HttpStatus.OK).body(paymentService.getSlipByMonths());
+	}
+	
+	@GetMapping(value = "/download_zip/{fn}")
+	public void downloadZip(@PathVariable("fn") String folderName,
+			HttpServletRequest request, HttpServletResponse response
+			) throws Exception {
+		logger.info("AMS - PaymentController downloadZip"+folderName);	
+		File file = paymentService.downloadZip(folderName);
+		Utils.downloadPdfFile(request, response, file);
+	}
+	
 }

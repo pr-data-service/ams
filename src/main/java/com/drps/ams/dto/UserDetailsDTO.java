@@ -29,7 +29,6 @@ import lombok.ToString;
 @EntityMapping(entity = UserDetailsEntity.class)
 public class UserDetailsDTO {
 
-
 	private Long id;	
 	
 	private String loginId;	

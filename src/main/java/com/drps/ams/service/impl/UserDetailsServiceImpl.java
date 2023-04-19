@@ -2,6 +2,7 @@ package com.drps.ams.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,13 @@ import com.drps.ams.dto.ExpenseItemsDTO;
 import com.drps.ams.dto.FlatDetailsDTO;
 import com.drps.ams.dto.RequestParamDTO;
 import com.drps.ams.dto.UserDetailsDTO;
+import com.drps.ams.dto.UserPasswordDTO;
 import com.drps.ams.entity.ExpenseItemsEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.DuplicateRecordException;
+import com.drps.ams.exception.InvalidConfirmPassword;
+import com.drps.ams.exception.InvalidCredentialsException;
 import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.exception.UserContextNotFoundException;
@@ -151,7 +155,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	public boolean isDuplicateRecord(UserDetailsDTO userDetailsDTO) {
 		List<UserDetailsEntity> list = userDetailsRepository.findByContactNo1(userDetailsDTO.getContactNo1());
 		if(list != null && userDetailsDTO.getId() != null && userDetailsDTO.getId() > 0) {
-			list = list.stream().filter( f -> f.getId() != userDetailsDTO.getId()).toList();
+			list = list.stream().filter( f -> f.getId() != userDetailsDTO.getId()).collect(Collectors.toList());
 		}
 		
 		return list != null && list.size() > 0 ? true : false;
@@ -178,5 +182,52 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		} else {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
 		}		
+	}
+	
+	@Override
+	public ApiResponseEntity getLoggedInUder() throws Exception {
+		UserContext userContext = Utils.getUserContext();
+		
+		UserDetailsEntity userDetailsEntity = userContext.getUserDetailsEntity();
+		if(userDetailsEntity != null) {
+			UserDetailsDTO userDetailsDTO = new UserDetailsDTO();
+			BeanUtils.copyProperties(userDetailsEntity, userDetailsDTO);
+			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, userDetailsDTO);
+		} else {
+			throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+		}
+	}
+	
+	@Override
+	public ApiResponseEntity updatePassword (UserPasswordDTO userPasswordDto) throws Exception {
+		UserContext userContext = Utils.getUserContext();
+		
+		if(!userPasswordDto.getNewPassword().equals(userPasswordDto.getConfirmPassword())) {
+			throw new InvalidConfirmPassword(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_INVALID_CONFIRM_PASSWORD_EXCEPTION));
+		}
+		
+		Long id = userPasswordDto.getId();
+		if(id!=null && id > 0) {
+			UserDetailsEntity userDetailsEntity = userDetailsRepository.getById(id);
+			
+			if(userDetailsEntity != null) {
+				
+				if(userDetailsEntity.getPassword().equals(userPasswordDto.getOldPassword())) {
+					userDetailsEntity.setPassword(userPasswordDto.getNewPassword());
+					userDetailsRepository.save(userDetailsEntity);
+					return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, "password Saved Successfully");
+				}
+				else {
+					throw new InvalidCredentialsException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_INVALID_CREDENTIALS_EXCEPTION));
+				}
+			}
+			else {
+				throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+			}
+		}
+		else {
+			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
+		}
+		
 	}
 }

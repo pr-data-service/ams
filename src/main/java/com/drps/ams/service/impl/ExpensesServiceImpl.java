@@ -20,8 +20,10 @@ import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.ExpenseItemsDTO;
 import com.drps.ams.dto.ExpensesDTO;
 import com.drps.ams.dto.FlatDetailsDTO;
+import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentDTO;
 import com.drps.ams.dto.RequestParamDTO;
+import com.drps.ams.dto.VoucherByMonthDTO;
 import com.drps.ams.entity.EventsEntity;
 import com.drps.ams.entity.ExpenseItemsEntity;
 import com.drps.ams.entity.ExpensesEntity;
@@ -34,21 +36,25 @@ import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.exception.UserContextNotFoundException;
 import com.drps.ams.repository.ExpenseItemsRepository;
 import com.drps.ams.repository.ExpensesRepository;
+import com.drps.ams.repository.NotesRepository;
 import com.drps.ams.service.CommonService;
 import com.drps.ams.service.ExpensesService;
+import com.drps.ams.service.NotesService;
 import com.drps.ams.service.VoucherNoService;
 import com.drps.ams.util.Utils;
-import com.drps.pdf.ExpanseVoucherPDF;
+import com.drps.ams.util.ZipFileUtils;
+import com.drps.pdf.ExpenseVoucherPDF;
 import com.drps.pdf.PaymentReceiptPDF;
 import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.DynamicQuery;
+import com.drps.ams.util.FileUtils;
 
 import lombok.NonNull;
 
 @Service
 public class ExpensesServiceImpl implements ExpensesService {
 
-	@Value("${file.download.path}")
+	@Value("${vouchar.storage.path}")
 	String FILE;
 	
 	@Autowired
@@ -65,6 +71,12 @@ public class ExpensesServiceImpl implements ExpensesService {
 	
 	@Autowired
 	DBQueryExecuter dbQueryExecuter;
+	
+	@Autowired
+	NotesRepository notesRepository;
+	
+	@Autowired
+	NotesService notesService;
 	
 	@Override
 	@Transactional
@@ -206,13 +218,81 @@ public class ExpensesServiceImpl implements ExpensesService {
 			if(entity != null) {
 				List<ExpenseItemsEntity> expenseItemList = expenseItemsRepository.findByExpenseId(userContext.getApartmentId(), userContext.getSessionId(), id);
 				
-				
-				ExpanseVoucherPDF pdf = new ExpanseVoucherPDF(FILE, entity, expenseItemList, result, null);
+				String filePath = FileUtils.prepairFilePathForVouchar(userContext, FILE, entity);
+				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null);
 				file = pdf.getFile();
 			}
 		}
 		
 		return file;
+	}
+	
+	@Transactional
+	@Override
+	public ApiResponseEntity cancel(@NonNull PaymentOrVoucharCancelDTO cancel) throws Exception {
+		UserContext userContext = Utils.getUserContext();
+		
+		if (cancel.getId() > 0) {
+			ExpensesEntity entity = expensesRepository.getById(cancel.getId());
+			if (entity != null) {
+				if(entity.getIsCanceled() != null && entity.getIsCanceled()) {
+					throw new RuntimeException("Vouchar already cancled.");
+				}
+				entity.setIsCanceled(true);
+				entity.setCancelRemarks(cancel.getCancelRemarks());
+				entity.setModifiedBy(userContext.getUserDetailsEntity().getId());
+				expensesRepository.save(entity);
+				
+				List<ExpenseItemsEntity> itemsList = expenseItemsRepository.findByExpenseId(userContext.getApartmentId(), userContext.getSessionId(), entity.getId());
+				for(ExpenseItemsEntity itemsEntity : itemsList) {
+					itemsEntity.setIsCanceled(true);
+					expenseItemsRepository.save(itemsEntity);
+				}
+				
+				String noteText = "Cancel vouchar with below mention remarks,"
+						+ "\n " + cancel.getCancelRemarks()
+						+ "\n Canceled By: " + userContext.getUserFullName();
+				notesService.createSystemNote(ApiConstants.OBJECT_EXPENSE, entity.getId(), "CANCEL-VOUCHAR", noteText);
+				
+				if(entity.getEventId() != null && entity.getEventId() > 0) {
+					noteText = "Vouchar canceled By " + userContext.getUserFullName()
+					+ " where vouchar No: " + entity.getVoucherNo() + " and amount: " + entity.getAmount();
+					notesService.createSystemNote(ApiConstants.OBJECT_EVENTS, entity.getEventId(), "CANCEL-VOUCHAR", noteText);
+				}
+			} else {
+				throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+			}
+		} else {
+			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
+		}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS));
+	}
+	
+	@Override
+	public ApiResponseEntity getVoucherByMonths() {
+		UserContext userContext = Utils.getUserContext();
+		List <VoucherByMonthDTO> dtoList = new ArrayList<VoucherByMonthDTO>();
+		
+		String sessionName = userContext.getSessionDetailsEntity().getName();
+		String path = FILE + "/" + sessionName;
+		File parentFolder = new File(path);
+		File []folderAndFiles = parentFolder.listFiles();
+		
+		for (File file : folderAndFiles) {
+			if(file.isDirectory()) {
+				VoucherByMonthDTO ps = new VoucherByMonthDTO();
+				ps.setFolderName(file.getName());
+//				ps.setFolderPath(path+"/"+file.getName());
+				dtoList.add(ps);
+			}
+		}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dtoList);
+	}
+	
+	@Override
+	public File downloadZip (String folderName) throws Exception {
+		UserContext userContext = Utils.getUserContext();
+		return ZipFileUtils.createZip(userContext, FILE, folderName, "expense");
 	}
 	
 }

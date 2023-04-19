@@ -1,18 +1,16 @@
 package com.drps.ams.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import com.drps.ams.bean.UserContext;
 import com.drps.ams.entity.LinkFlatDetailsAndUserDetailsEntity;
 
 public class ApiConstants {
+	
+	public static final String STRING_TIMEZONE_ID_IST = "IST";
+	public static final String STRING_TIMEZONE_ID_UTC = "UTC";
 	
 	public static final int RESP_STATUS_SUCCESS = 100;	
 	public static final int RESP_STATUS_FAIL = 0;
@@ -20,6 +18,7 @@ public class ApiConstants {
 	public static final int RESP_STATUS_USER_DISABLED_EXCEPTION = 201;
 	public static final int RESP_STATUS_INVALID_CREDENTIALS_EXCEPTION = 202;
 	public static final int RESP_STATUS_USER_CONTEXT_NOT_FOUND_EXCEPTION = 203;
+	public static final int RESP_STATUS_INVALID_CONFIRM_PASSWORD_EXCEPTION = 204;
 	
 	public static final int RESP_STATUS_NO_RECORD_FOUND_EXCEPTION = 220;
 	public static final int RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION = 221;
@@ -33,6 +32,8 @@ public class ApiConstants {
 	private static final String RESP_STATUS_MSG_RECORD_ID_NOT_FOUND = "Record id not found";
 	private static final String RESP_STATUS_MSG_DUPLICATE_RECORD = "Duplicate Record found";
 	private static final String RESP_STATUS_MSG_USER_CONTEXT_NOT_FOUND = "User Context not found";
+	private static final String RESP_STATUS_MSG_INVALID_CONFIRM_PASSWORD = "New password and confirm password should be same.";
+	private static final String RESP_STATUS_MSG_INVALID_CREDENTIALS = "Invalid credentials.";
 	
 	public static final Map<Integer, String> STATUS_MESSAGE = new HashMap<>();
 	static {
@@ -43,8 +44,8 @@ public class ApiConstants {
 		STATUS_MESSAGE.put(RESP_STATUS_NO_RECORD_FOUND_EXCEPTION, RESP_STATUS_MSG_NO_RECORD_FOUND);
 		STATUS_MESSAGE.put(RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION, RESP_STATUS_MSG_RECORD_ID_NOT_FOUND);
 		STATUS_MESSAGE.put(RESP_STATUS_DUPLICATE_RECORD_EXCEPTION, RESP_STATUS_MSG_DUPLICATE_RECORD);
-		
-		
+		STATUS_MESSAGE.put(RESP_STATUS_INVALID_CONFIRM_PASSWORD_EXCEPTION, RESP_STATUS_MSG_INVALID_CONFIRM_PASSWORD);
+		STATUS_MESSAGE.put(RESP_STATUS_INVALID_CREDENTIALS_EXCEPTION, RESP_STATUS_MSG_INVALID_CREDENTIALS);
 	}
 	
 	public static final String OBJECT_USER_DETAILS = "USER_DETAILS";
@@ -53,13 +54,14 @@ public class ApiConstants {
 	public static final String OBJECT_MAINTENANCE = "MAINTENANCE";
 	public static final String OBJECT_PAYMENT = "PAYMENT";
 	public static final String OBJECT_PAYMENT_DETAILS = "PAYMENT_DETAILS";
-	public static final String OBJECT_EXPANSE = "EXPANSE";
-	public static final String OBJECT_EXPANSE_ITEMS = "EXPANSE_ITEMS";
-	public static final String OBJECT_EXPANSE_NOTES = "NOTES";
+	public static final String OBJECT_EXPENSE = "EXPENSE";
+	public static final String OBJECT_EXPENSE_ITEMS = "EXPENSE_ITEMS";
+	public static final String OBJECT_EXPENSE_NOTES = "NOTES";
 	
-	public static final List<String> OBJECT_LIST = Arrays.asList(OBJECT_USER_DETAILS, OBJECT_FLAT_DETAILS, OBJECT_EVENTS,
-													OBJECT_MAINTENANCE, OBJECT_PAYMENT, OBJECT_PAYMENT_DETAILS, OBJECT_EXPANSE,
-													OBJECT_EXPANSE_ITEMS, OBJECT_EXPANSE_NOTES);
+	public static final List<String> OBJECT_LIST = 
+			Arrays.asList(OBJECT_USER_DETAILS, OBJECT_FLAT_DETAILS, OBJECT_EVENTS,
+						OBJECT_MAINTENANCE, OBJECT_PAYMENT, OBJECT_PAYMENT_DETAILS,
+						OBJECT_EXPENSE, OBJECT_EXPENSE_ITEMS, OBJECT_EXPENSE_NOTES);
 
 	
 	
