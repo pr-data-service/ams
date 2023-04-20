@@ -10,7 +10,8 @@ import org.springframework.data.repository.CrudRepository;
 import com.drps.ams.entity.UserDetailsEntity;
 
 public interface UserDetailsRepository extends JpaRepository<UserDetailsEntity, Long>, CrudRepository<UserDetailsEntity, Long>,JpaSpecificationExecutor<UserDetailsEntity> {
-
+	
+	@Query("SELECT f FROM UserDetailsEntity f WHERE f.contactNo1 = :contactNo1")
 	List<UserDetailsEntity> findByContactNo1(String contactNo1);
 	
 	@Query("SELECT f FROM UserDetailsEntity f WHERE f.apartmentId = :apartmentId")

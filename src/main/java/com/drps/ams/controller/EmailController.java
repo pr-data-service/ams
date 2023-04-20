@@ -32,8 +32,8 @@ private static final  Logger logger = LogManager.getLogger(EmailController.class
 	}
 	
 	@GetMapping(value = "/setup/get")
-	public ResponseEntity<ApiResponseEntity> getSelf() throws Exception {
-		logger.info("AMS - EmailController getSelf: {}");
+	public ResponseEntity<ApiResponseEntity> getByApartmentId() throws Exception {
+		logger.info("AMS - EmailController getByApartmentId: {}");
 		return ResponseEntity.status(HttpStatus.OK).body(emailService.getByApartmentId());		
 	}
 	
