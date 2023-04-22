@@ -3,6 +3,7 @@
  */
 package com.drps.ams.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,10 +16,14 @@ import org.springframework.stereotype.Service;
 import com.drps.ams.bean.EmailProps;
 import com.drps.ams.bean.UserContext;
 import com.drps.ams.dto.ApiResponseEntity;
+import com.drps.ams.dto.EmailServiceDTO;
 import com.drps.ams.dto.EmailSetupDetailsDTO;
+import com.drps.ams.entity.EmailServiceEntity;
 import com.drps.ams.entity.EmailSetupDetailsEntity;
 import com.drps.ams.exception.DuplicateRecordException;
 import com.drps.ams.exception.NoRecordFoundException;
+import com.drps.ams.exception.RecordIdNotFoundException;
+import com.drps.ams.repository.EmailServiceRepository;
 import com.drps.ams.repository.EmailSetupDetailsRepository;
 import com.drps.ams.service.EmailService;
 import com.drps.ams.util.ApiConstants;
@@ -50,12 +55,15 @@ public class EmailServiceImpl implements EmailService {
 
 	@Autowired
 	EmailSetupDetailsRepository emailSetupDetailsRepository;
+	
+	@Autowired
+	EmailServiceRepository emailServiceRepository;
 
 	@Autowired
 	private JavaMailSender emailSender;
 
 	@Override
-	public ApiResponseEntity saveOrUpdate(@NonNull EmailSetupDetailsDTO emailSetupDetailsDTO) {
+	public ApiResponseEntity setupSaveOrUpdate(@NonNull EmailSetupDetailsDTO emailSetupDetailsDTO) {
 
 		UserContext userContext = Utils.getUserContext();
 		if (isDuplicateRecord(emailSetupDetailsDTO)) {
@@ -103,7 +111,7 @@ public class EmailServiceImpl implements EmailService {
 	}
 
 	@Override
-	public ApiResponseEntity getByApartmentId() {
+	public ApiResponseEntity getSetupByApartmentId() {
 		UserContext userContext = Utils.getUserContext();
 		EmailSetupDetailsDTO emailSetupDetailsDto = new EmailSetupDetailsDTO();
 
@@ -114,6 +122,54 @@ public class EmailServiceImpl implements EmailService {
 			BeanUtils.copyProperties(emailSetupDetailsEntity, emailSetupDetailsDto);
 		}
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, emailSetupDetailsDto);
+	}
+	
+	@Override
+	public ApiResponseEntity serviceSaveOrUpdate(EmailServiceDTO dto) throws Exception {
+		UserContext userContext = Utils.getUserContext();
+			if(dto.getId() != null && dto.getId() > 0) {	
+				EmailServiceEntity entity = emailServiceRepository.findById(dto.getId()).get();
+				if (entity != null) {
+					entity.setModifiedBy(userContext.getUserId());
+					entity.setIsActive(dto.getIsActive());
+					entity = emailServiceRepository.save(entity);
+					dto.setId(entity.getId());
+					dto.setIsActive(entity.getIsActive());
+					dto.setType(entity.getType());
+				}
+				else {
+					throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+				}
+
+			}else {	
+				EmailServiceEntity entity = new EmailServiceEntity();
+				BeanUtils.copyProperties(dto, entity);
+				entity.setApartmentId(userContext.getApartmentId());
+				entity.setIsActive(dto.getIsActive());
+				entity.setCreatedBy(userContext.getUserId());
+				entity = emailServiceRepository.save(entity);
+				dto.setId(entity.getId());
+				dto.setIsActive(entity.getIsActive());
+				dto.setType(entity.getType());
+			}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto) ;
+	}
+
+
+	@Override
+	public ApiResponseEntity getServiceByApartmentId() {
+		UserContext userContext = Utils.getUserContext();
+
+		List<EmailServiceEntity> list = emailServiceRepository.getByApartmentId(userContext.getApartmentId());
+		List<EmailServiceDTO> dtos = new ArrayList<EmailServiceDTO>();
+		for(EmailServiceEntity entity: list) {
+			EmailServiceDTO dto = new EmailServiceDTO();
+			dto.setId(entity.getId());
+			dto.setIsActive(entity.getIsActive());
+			dto.setType(entity.getType());
+			dtos.add(dto);
+		}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dtos);
 	}
 
 	

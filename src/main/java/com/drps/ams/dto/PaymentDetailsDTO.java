@@ -29,6 +29,8 @@ public class PaymentDetailsDTO {
 
 	public Long id;
 	
+	public Long paymentId;
+	
 	public Long maintenanceId;
 	
 	@FKEntityFieldMapping(entity = FlatDetailsEntity.class, join = FKEntityFieldMapping.LEFT_JOIN)

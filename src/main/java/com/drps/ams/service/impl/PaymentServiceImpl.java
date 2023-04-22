@@ -63,6 +63,7 @@ import com.drps.ams.service.PaymentService;
 import com.drps.ams.service.SessionDetailsService;
 import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.DateUtils;
+import com.drps.ams.util.ExcelFileForPaymentDetails;
 import com.drps.ams.util.ExcelFileUtils;
 import com.drps.ams.util.FileUtils;
 import com.drps.ams.util.Utils;
@@ -440,6 +441,7 @@ public class PaymentServiceImpl implements PaymentService {
 		String startDt = DateUtils.dateToStringForDB(firstDay) + " 00:00:00";
 		String endDt = DateUtils.dateToStringForDB(lastDay) + " 23:59:59";
 		List<Object[]> list = paymentRepository.getMonthlyPaymentList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTimeForDB(startDt), DateUtils.stringToDateTimeForDB(endDt));
+		List<Object[]> detailsList = paymentDetailsRepository.getMonthlyPaymentDetailsList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTimeForDB(startDt), DateUtils.stringToDateTimeForDB(endDt));
 		
 		List<PaymentDTO> listDto = new ArrayList<>();
 		for(Object[] arr : list) {
@@ -456,6 +458,18 @@ public class PaymentServiceImpl implements PaymentService {
 			listDto.add(dto);
 		}
 		
+
+		List<PaymentDetailsDTO> detailsListDto = new ArrayList<>();
+		for(Object[] arr : detailsList) {
+			PaymentDetailsEntity entity = (PaymentDetailsEntity)arr[0];
+			String eventName = (String)arr[1];
+			PaymentDetailsDTO dto = new PaymentDetailsDTO();
+			BeanUtils.copyProperties(entity, dto);
+			dto.setPaymentMonthName(DateUtils.MONTH_NAME_MAP.get(entity.getPaymentMonth()));
+			dto.setEventName(eventName);
+
+			detailsListDto.add(dto);
+		}
 		
 		
 		String path = FILE;
@@ -471,8 +485,13 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             Files.createDirectories(fileStorageLocation);
             String fileName = path + "/" +  "payment-receipt_"+ folderName;
-    		List<Object> headerFields = Arrays.asList(new String[] {"Srl No", "Bill No", "Flat Id", "Amount", "Payment Mode", "Payment Mode Ref", "Payment Date", "Payment By", "Is Canceled", "Cancel Remarks", "Created Date", "Created By"}) ; 
-    		ExcelFileUtils.createExcelSheet(headerFields, listDto, folderName, fileName);
+    		List<Object> headerFields1 = Arrays.asList(new String[] {"Srl No", "Bill No", "Flat Id", "Amount", "Payment Mode", "Payment Mode Ref", "Payment Date", "Payment By", "Is Canceled", "Cancel Remarks", "Created Date", "Created By"}) ; 
+    		ExcelFileUtils.createExcelSheet(headerFields1, listDto, folderName, fileName);
+            
+    		
+    		fileName = path + "/" +  "audit-payment-receipt_"+ folderName;
+            List<Object> headerFields2 = Arrays.asList(new String[] {"Srl No", "Bill No", "Flat Id", "Payment Mode", "Payment Mode Ref", "Payment Date", "Amount", "Payment By", "Is Canceled", "Cancel Remarks"}) ; 
+            ExcelFileForPaymentDetails.createExcelSheet(headerFields2, listDto, detailsListDto, folderName, fileName);
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
