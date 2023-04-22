@@ -1,13 +1,6 @@
 package com.drps.ams.controller;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URLConnection;
-import java.nio.file.Files;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,16 +8,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -39,7 +25,6 @@ import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentSaveDTO;
 import com.drps.ams.service.PaymentService;
-import com.drps.ams.service.VoucherNoService;
 import com.drps.ams.util.Utils;
 
 @RestController
@@ -50,9 +35,6 @@ public class PaymentController {
 	
 	@Autowired
 	PaymentService paymentService;
-	
-	@Autowired
-	VoucherNoService voucherNoService;
 	
 	@GetMapping(value = "/add_page/get/{id}")
 	public ResponseEntity<ApiResponseEntity> getAddPageDetails(@PathVariable("id") Long id) throws Exception {

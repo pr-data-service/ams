@@ -140,7 +140,8 @@ public class EmailServiceImpl implements EmailService {
 
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-		helper.setFrom("pradyut.april@gmail.com");
+//		helper.setFrom("pradyut.april@gmail.com");
+		helper.setFrom("pradyut.bca15@outlook.com");
 		helper.setTo(emailProps.getTo());
 		helper.setSubject(emailProps.getSubject());
 		helper.setText(emailProps.getText());

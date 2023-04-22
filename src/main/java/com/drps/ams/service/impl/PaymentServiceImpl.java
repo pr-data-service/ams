@@ -135,7 +135,6 @@ public class PaymentServiceImpl implements PaymentService {
 		RequestParamDTO reqParamDto = RequestParamDTO.getInstance(reqParams);
 		
 		List<PaymentDTO> rtnList = dbQueryExecuter.executeQuery(new QueryMaker(reqParamDto, PaymentDTO.class));
-		//commonService.addPaymentByToDTO(rtnList);
 		commonService.addUserDetailsToDTO(rtnList, PaymentDTO.class);
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);

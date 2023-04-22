@@ -1,16 +1,12 @@
 package com.drps.ams.util;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.zip.*;
-
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import com.drps.ams.bean.UserContext;
-import com.drps.ams.exception.FileStorageException;
 
 public class ZipFileUtils {
     public static File createZip(UserContext userContext, String path, String folderName, String namePrefix) throws Exception {
