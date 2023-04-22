@@ -1,5 +1,6 @@
 package com.drps.ams.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -61,6 +62,9 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetailsEn
 	@Query("SELECT f.id, f.flatNo, SUM(m.amount) FROM PaymentDetailsEntity m, FlatDetailsEntity f WHERE m.flatId = f.id AND m.apartmentId = :apartmentId"
 			+ " AND m.eventId = :eventId AND (m.isCanceled IS NULL OR m.isCanceled = 0) GROUP BY m.flatId")
 	public List<Object[]> getEventPaymentList(Long apartmentId, Long eventId);
+
+	@Query("SELECT p, e.name FROM PaymentDetailsEntity p, EventsEntity e WHERE e.id = p.eventId AND p.apartmentId = :apartmentId AND p.sessionId = :sessionId AND p.paymentDate BETWEEN :startDt AND :endDt")
+	public List<Object[]> getMonthlyPaymentDetailsList(Long apartmentId, Long sessionId, Date startDt, Date endDt);
 	
 	
 }

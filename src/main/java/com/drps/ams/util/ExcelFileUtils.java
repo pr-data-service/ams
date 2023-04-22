@@ -1,7 +1,6 @@
 package com.drps.ams.util;
 
 import java.io.FileOutputStream;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -11,7 +10,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.drps.ams.dto.PaymentDTO;
-import com.drps.ams.entity.PaymentEntity;
 
 public class ExcelFileUtils {
 	
@@ -27,46 +25,60 @@ public class ExcelFileUtils {
 	}
 	
 	public static void rows(Sheet sheet, List<PaymentDTO> rows) {
+
 		int rowNum = 1;
-		for(PaymentDTO entity: rows) {
+		for(PaymentDTO dto: rows) {
 			Row row = sheet.createRow(rowNum++);
 			Cell cell = row.createCell(0);
 			cell.setCellValue(rowNum-1);
 			
 			cell = row.createCell(1);
-			cell.setCellValue(entity.getBillNo() == null ? "" : entity.getBillNo());
+			cell.setCellValue(dto.getBillNo() == null ? "" : dto.getBillNo());
 			
 			cell = row.createCell(2);
-			cell.setCellValue(entity.getFlatNo() == null ? "" : entity.getFlatNo());
+			cell.setCellValue(dto.getFlatNo() == null ? "" : dto.getFlatNo());
 			
 			cell = row.createCell(3);
-			cell.setCellValue(entity.getAmount() == null ? 0.00 : entity.getAmount());
+			cell.setCellValue(dto.getAmount() == null ? 0.00 : dto.getAmount());
 			
 			cell = row.createCell(4);
-			cell.setCellValue(entity.getPaymentMode() == null ? "" : entity.getPaymentMode());
+			cell.setCellValue(dto.getPaymentMode() == null ? "" : dto.getPaymentMode());
 			
 			cell = row.createCell(5);
-			cell.setCellValue(entity.getPaymentModeRef() == null ? "" : entity.getPaymentModeRef());
+			cell.setCellValue(dto.getPaymentModeRef() == null ? "" : dto.getPaymentModeRef());
 			
 			cell = row.createCell(6);
-			cell.setCellValue(entity.getPaymentDate() == null ? "" : DateUtils.dateToString(entity.getPaymentDate()));
+			cell.setCellValue(dto.getPaymentDate() == null ? "" : DateUtils.dateToString(dto.getPaymentDate()));
 			
 			cell = row.createCell(7);
-			cell.setCellValue(entity.getPaymentByName() == null ? "" : entity.getPaymentByName());
+			cell.setCellValue(dto.getPaymentByName() == null ? "" : dto.getPaymentByName());
 			
 			cell = row.createCell(8);
-			cell.setCellValue(entity.getIsCanceled() == null ? false : entity.getIsCanceled());
+			cell.setCellValue(dto.getIsCanceled() == null ? false : dto.getIsCanceled());
+			
 			
 			cell = row.createCell(9);
-			cell.setCellValue(entity.getCancelRemarks() == null ? "" : entity.getCancelRemarks());
+			cell.setCellValue(dto.getCancelRemarks() == null ? "" : dto.getCancelRemarks());
 			
 			cell = row.createCell(10);
-			cell.setCellValue(entity.getCreatedDate() == null ? "" : DateUtils.dateToString(entity.getCreatedDate()));
+			cell.setCellValue(dto.getCreatedDate() == null ? "" : DateUtils.dateToString(dto.getCreatedDate()));
 			
 			cell = row.createCell(11);
-			cell.setCellValue(entity.getCreatedByName() == null ? "" : entity.getCreatedByName());
+			cell.setCellValue(dto.getCreatedByName() == null ? "" : dto.getCreatedByName());
 			
 		}
+		
+		Double totalAmount = rows.stream()
+                .filter(dto -> dto.getIsCanceled() == null || dto.getIsCanceled() == false)
+                .mapToDouble(PaymentDTO::getAmount)
+                .sum();
+
+		Row row = sheet.createRow(rowNum++);
+		Cell cell = row.createCell(2);
+		cell.setCellValue("Total Amount");
+		
+		cell = row.createCell(3);
+		cell.setCellValue(totalAmount);
 	}
 	
 	public static void header(Sheet sheet, List<Object> fields) {
@@ -76,5 +88,5 @@ public class ExcelFileUtils {
 			Cell cell = row.createCell(i);
 			cell.setCellValue((String)fields.get(i));
 		}
-	}
+	}	
 }
