@@ -122,6 +122,7 @@ public class ExpensesServiceImpl implements ExpensesService {
 					expensesItemEntity = new ExpenseItemsEntity();
 					BeanUtils.copyProperties(item, expensesItemEntity);
 					expensesItemEntity.setExpenseId(expensesEntity.getId());
+					expensesItemEntity.setExpenseDate(expensesEntity.getExpenseDate());
 					expensesItemEntity.setCreatedBy(userContext.getUserDetailsEntity().getId());
 					expensesItemEntity.setModifiedBy(userContext.getUserDetailsEntity().getId());
 					expensesItemEntity.setSessionId(userContext.getSessionId());

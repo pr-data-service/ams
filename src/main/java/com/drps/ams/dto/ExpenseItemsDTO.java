@@ -28,6 +28,7 @@ public class ExpenseItemsDTO {
 	public Long expenseId;
 	public String itemHead;
 	public Double amount;
+	private Date expenseDate;
 	private Boolean isCanceled;
 	public Long apartmentId;
 	public Long createdBy;	
