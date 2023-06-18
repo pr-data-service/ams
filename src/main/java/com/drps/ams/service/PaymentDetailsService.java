@@ -1,6 +1,7 @@
 package com.drps.ams.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.PaymentDetailsDTO;
@@ -18,9 +19,13 @@ public interface PaymentDetailsService {
 
 	ApiResponseEntity saveLastPaymentDate(PaymentDetailsDTO paymentDetailsDto);
 
-	PaymentDetailsEntity getLastPaymentForMaintenance(Long flatId);
+	PaymentDetailsEntity getLastPaymentForMaintenance(Long apartmentId, Long flatId);
 
 	ApiResponseEntity getDuesListForAdvancePayment(Long flatId, int month, int year) throws Exception;
+
+	Map<Long, List<PaymentDetailsDTO>> getDueListForEmailNotification(Long apartmentId, int excludesMonthCount);
+
+	List<PaymentDetailsDTO> getDuesListForNotification(Long apartmentId, Long flatId, String flatNo);
 
 
 }

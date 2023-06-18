@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.drps.ams.bean.UserContext;
+import com.drps.ams.cache.FlatDetailsCacheService;
 import com.drps.ams.dbquery.DBQueryExecuter;
 import com.drps.ams.dbquery.QueryMaker;
 import com.drps.ams.dto.ApiResponseEntity;
@@ -25,6 +27,7 @@ import com.drps.ams.dto.ListViewFieldDTO;
 import com.drps.ams.dto.MaintenanceDTO;
 import com.drps.ams.dto.PaymentDetailsDTO;
 import com.drps.ams.dto.RequestParamDTO;
+import com.drps.ams.entity.ApartmentDetailsEntity;
 import com.drps.ams.entity.EventsEntity;
 import com.drps.ams.entity.ExpensesEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
@@ -33,6 +36,7 @@ import com.drps.ams.entity.PaymentTypeMasterEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
 import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.UserContextNotFoundException;
+import com.drps.ams.repository.ApartmentDetailsRepository;
 import com.drps.ams.repository.EventsRepository;
 import com.drps.ams.repository.FlatDetailsRepository;
 import com.drps.ams.repository.LinkFlatDetailsAndUserDetailsRepository;
@@ -42,9 +46,11 @@ import com.drps.ams.repository.PaymentRepository;
 import com.drps.ams.repository.PaymentTypeMasterRepository;
 import com.drps.ams.repository.SessionDetailsRepository;
 import com.drps.ams.service.CommonService;
+import com.drps.ams.service.EmailService;
 import com.drps.ams.service.FlatDetailsService;
 import com.drps.ams.service.PaymentDetailsService;
 import com.drps.ams.service.SessionDetailsService;
+import com.drps.ams.service.helper.FlatDetailsHelperService;
 import com.drps.ams.util.Utils;
 import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.DateUtils;
@@ -91,10 +97,22 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 	@Autowired
 	DBQueryExecuter dbQueryExecuter;
 	
+	@Autowired
+	FlatDetailsCacheService flatDetailsCacheService;
+	
+	@Autowired
+	EmailService emailService;
+	
+	@Autowired
+	ApartmentDetailsRepository apartmentDetailsRepository;
+	
+	@Autowired
+	FlatDetailsHelperService flatDetailsHelperService;
+	
 	@Override
 	public ApiResponseEntity getListView(String reqParams) throws Exception {
 		
-			
+		emailService.getEmailDetailsForDues();
 		RequestParamDTO reqParamDto = RequestParamDTO.getInstance(reqParams);
 		List<PaymentDetailsDTO> rtnList = dbQueryExecuter.executeQuery(new QueryMaker<PaymentDetailsDTO>(reqParamDto, PaymentDetailsDTO.class));
 		
@@ -215,80 +233,42 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 		}
 	}
 	
+	/*
+	 * flatNo = arr[0]
+	 */
 	@Override
 	public List<PaymentDetailsDTO> getDuesList(Long flatId, Object ...arr) {
 		UserContext userContext = Utils.getUserContext();
 		
-		String flatNo = null; 
-		if(arr != null && arr.length > 0) {
-			flatNo = String.valueOf(arr[0]);
-		} else {
-			FlatDetailsEntity flatDetailsEntity = flatDetailsRepository.findById(flatId).orElse(null);
-			flatNo = flatDetailsEntity != null ? flatDetailsEntity.getFlatNo() : "";
-		}
-		List<PaymentDetailsDTO> duesList = new ArrayList<>();
-		
-		PaymentDetailsEntity lastPayment = getLastPaymentForMaintenance(flatId);
-		
-		LocalDate currentDate = LocalDate.now(ZoneId.systemDefault());
 		SessionDetailsEntity sessionDtls = sessionDetailsRepository.findById(userContext.getSessionId()).get();
-		if(sessionDtls != null) {
-			if(lastPayment == null && sessionDtls.getFromDate() != null) {
-				
-				LocalDate localDate = sessionDtls.getFromDate().toInstant()
-					      .atZone(ZoneId.systemDefault())
-					      .toLocalDate();
-				
-				lastPayment = new PaymentDetailsEntity();
-				lastPayment.setPaymentYear(localDate.getYear());
-				lastPayment.setPaymentMonth(localDate.getMonth().getValue()-1);
-				
-			}
-			if(sessionDtls.getToDate() != null) {
-				LocalDate toDt = sessionDtls.getToDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-				//currentDate = currentDate.isAfter(toDt) ? toDt : currentDate; //currently paused
-				currentDate = toDt;
-			}
-		}
+		PaymentDetailsEntity lastPayment = getLastPaymentForMaintenance(userContext.getApartmentId(), flatId);
+		lastPayment = Utils.validateLastPayment(lastPayment, sessionDtls);
+		LocalDate currentDate = Utils.getCurrentDateFromSessionDetails(sessionDtls);
 		
+		String flatNo = flatDetailsHelperService.getFlatNo(userContext.getApartmentId(), flatId, arr); 
+		List<PaymentDetailsDTO> duesList = Utils.getDuesList(flatId, flatNo, lastPayment, currentDate);
 		
-		if(lastPayment != null && currentDate != null) {
-			
-			Integer year = lastPayment.getPaymentYear();
-			Integer month = lastPayment.getPaymentMonth()+1;
-			
-			Integer currentYear = currentDate.getYear();
-			Integer currentMonth = currentDate.getMonth().getValue();
-			
-			PaymentDetailsDTO payDtlsDto = null;
-			
-			long tempRecId = 1;
-			int tempfromMonth = month;
-			int tempToMonth = 12;
-			for(int yr = year; yr <= currentYear; yr++) {
-				
-				if(yr == currentYear) {
-					tempToMonth = currentMonth;
-				}
-				for(int mn = tempfromMonth; mn <= tempToMonth; mn++) {
-					payDtlsDto = new PaymentDetailsDTO();
-					payDtlsDto.setId(tempRecId++);
-					payDtlsDto.setFlatId(flatId);
-					payDtlsDto.setFlatNo(flatNo);
-					payDtlsDto.setPaymentMonth(mn);
-					payDtlsDto.setPaymentMonthName(DateUtils.MONTH_NAME_MAP.getOrDefault(mn, ""));
-					payDtlsDto.setPaymentYear(yr);
-					duesList.add(payDtlsDto);
-				}
-				tempfromMonth = 1;
-			}
-			
-		} else {
-			throw new RuntimeException("Error on create due list.");
-		}
 		
 		if(duesList != null && !duesList.isEmpty()) {
 			sessionDetailsService.addSessionIdAndMaintenanceOnList(duesList, flatId);
+		}
+		
+		return duesList;
+	}
+	
+	@Override
+	public List<PaymentDetailsDTO> getDuesListForNotification(Long apartmentId, Long flatId, String flatNo) {
+		List<SessionDetailsEntity> sessionList = sessionDetailsRepository.findByApartmentId(apartmentId);
+		SessionDetailsEntity sessionDtls = Utils.getCurrentSessionDetails(sessionList);
+		PaymentDetailsEntity lastPayment = getLastPaymentForMaintenance(apartmentId, flatId);
+		lastPayment = Utils.validateLastPayment(lastPayment, sessionDtls);
+		LocalDate currentDate = Utils.getCurrentDateFromSessionDetails(sessionDtls);
+		
+		List<PaymentDetailsDTO> duesList = Utils.getDuesList(flatId, flatNo, lastPayment, currentDate);
+		
+		
+		if(duesList != null && !duesList.isEmpty()) {
+			sessionDetailsService.addSessionIdAndMaintenanceOnList(apartmentId, duesList, flatId);
 		}
 		
 		return duesList;
@@ -332,11 +312,9 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 	}
 	
 	@Override
-	public PaymentDetailsEntity getLastPaymentForMaintenance(Long flatId) {
-		UserContext userContext = Utils.getUserContext();
-		
+	public PaymentDetailsEntity getLastPaymentForMaintenance(Long apartmentId, Long flatId) {
 		PaymentDetailsEntity lastPayment = null;
-		List<PaymentDetailsEntity> list = paymentDetailsRepository.findByFlatIdForDueList(userContext.getApartmentId(), flatId);
+		List<PaymentDetailsEntity> list = paymentDetailsRepository.findByFlatIdForDueList(apartmentId, flatId);
 		list = list.stream().filter( f -> f.getEventId() == 1).collect(Collectors.toList());
 		if(list != null && !list.isEmpty()) {			
 			Comparator<PaymentDetailsEntity> compareByYearThenMonth = Comparator
@@ -362,7 +340,7 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 			payDtlsDto.setFlatNo(flatNo);
 			
 			if(month <= 0 && year <= 0) {
-				PaymentDetailsEntity lastPayment = getLastPaymentForMaintenance(flatId);
+				PaymentDetailsEntity lastPayment = getLastPaymentForMaintenance(userContext.getApartmentId(), flatId);
 				if(lastPayment != null) {
 					month = lastPayment.getPaymentMonth();
 					year = lastPayment.getPaymentYear();
@@ -383,5 +361,33 @@ public class PaymentDetailsServiceImpl implements PaymentDetailsService {
 		}
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, payDtlsDto);
+	}
+	
+	@Override
+	public Map<Long, List<PaymentDetailsDTO>> getDueListForEmailNotification(Long apartmentId, int excludesMonthCount) {
+		
+		Map<Long, List<PaymentDetailsDTO>> rtnflatMap = null;
+		List<FlatDetailsEntity> flatList = flatDetailsRepository.getAll(apartmentId);
+		
+		List<PaymentDetailsDTO> duesList = null;
+		rtnflatMap = new HashMap<>();
+		for(FlatDetailsEntity entity : flatList) {
+			try {
+				duesList = getDuesListForNotification(apartmentId, entity.getId(), entity.getFlatNo());
+				duesList = duesList.stream().filter(Utils::isDueTillCurrentDateOrLessThan).collect(Collectors.toList());
+				
+				if(duesList.size() > excludesMonthCount) {
+					long srlno = 1;
+					for(PaymentDetailsDTO duesDto : duesList) {
+						duesDto.setId(srlno++);
+					}
+					rtnflatMap.put(entity.getId(), duesList);
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+				logger.error(e);
+			}
+		}
+		return rtnflatMap;
 	}
 }

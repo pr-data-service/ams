@@ -1,5 +1,7 @@
 package com.drps.ams.service;
 
+import java.util.List;
+
 import javax.mail.MessagingException;
 
 import com.drps.ams.bean.EmailProps;
@@ -13,9 +15,10 @@ public interface EmailService {
 
 	ApiResponseEntity getSetupByApartmentId();
 
-	void sendSimpleMessage(EmailProps emailProps) throws MessagingException;
 
 	ApiResponseEntity getServiceByApartmentId();
 
 	ApiResponseEntity serviceSaveOrUpdate(EmailServiceDTO dto) throws Exception;
+
+	List<EmailProps> getEmailDetailsForDues();
 }

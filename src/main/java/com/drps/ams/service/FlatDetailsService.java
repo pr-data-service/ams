@@ -1,9 +1,12 @@
 package com.drps.ams.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.FlatDetailsDTO;
+import com.drps.ams.entity.FlatDetailsEntity;
+import com.drps.ams.entity.join.FlatDetailsAndUserDetailsEntity;
 
 import lombok.NonNull;
 
@@ -20,5 +23,11 @@ public interface FlatDetailsService {
 	ApiResponseEntity deleteAllById(List<Long> ids) throws Exception;
 
 	ApiResponseEntity get();
+
+	Map<Long, FlatDetailsAndUserDetailsEntity> getFlatDetailsAndUserDetailsMap(Long apartmentId);
+
+	FlatDetailsAndUserDetailsEntity findFlatDetailsAndUserDetailsById(Long aprtmentId, Long flatId);
+
+	FlatDetailsEntity findById(long aprtmentId, long flatId);
 
 }

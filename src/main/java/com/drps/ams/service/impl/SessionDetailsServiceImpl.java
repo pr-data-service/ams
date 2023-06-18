@@ -153,15 +153,9 @@ public class SessionDetailsServiceImpl implements SessionDetailsService {
 //			LocalDate frmDt = null;
 //			LocalDate toDt = null;
 			for(PaymentDetailsDTO dto : list) {
-				LocalDate mntDt = LocalDate.of(dto.getPaymentYear(), dto.getPaymentMonth(), 1);
 				
-				SessionDetailsEntity sessionDetailsEntity = sessionList.stream().filter( f -> {
-					LocalDate frmDt = new java.sql.Date(f.getFromDate().getTime()).toLocalDate();
-					LocalDate toDt = new java.sql.Date(f.getToDate().getTime()).toLocalDate();
-					
-					return mntDt.isEqual(frmDt) || ( mntDt.isAfter(frmDt) && mntDt.isBefore(toDt) ) ? true : false;
-				}).findAny().orElse(null);
-				
+				SessionDetailsEntity sessionDetailsEntity = Utils.getSessionDetailsByYearAndMonth(sessionList, dto.getPaymentYear(), dto.getPaymentMonth());
+
 				if(sessionDetailsEntity != null) {
 					dto.setPaymentForSessionId(sessionDetailsEntity.getId());
 					dto.setPaymentForSessionName(sessionDetailsEntity.getName());
@@ -175,15 +169,7 @@ public class SessionDetailsServiceImpl implements SessionDetailsService {
 					//If Session wise Maintenance not found then Maintenance will get from previous Session
 					if(mainEnt == null) {
 												
-						SessionDetailsEntity prevSessionDetailsEntity = sessionList.stream().filter( f -> {
-							LocalDate curntFrmDt = new java.sql.Date(sessionDetailsEntity.getFromDate().getTime()).toLocalDate();
-							curntFrmDt = curntFrmDt.minusDays(1);
-							LocalDate frmDt = new java.sql.Date(f.getFromDate().getTime()).toLocalDate();
-							LocalDate toDt = new java.sql.Date(f.getToDate().getTime()).toLocalDate();
-							
-							return curntFrmDt.isEqual(toDt) || ( curntFrmDt.isAfter(frmDt) && curntFrmDt.isBefore(toDt) ) ? true : false;
-						}).findAny().orElse(null);
-						
+						SessionDetailsEntity prevSessionDetailsEntity = Utils.getPreviousSessionDetailsByCurrentSessionFromDate(sessionList, sessionDetailsEntity.getFromDate());
 						if(prevSessionDetailsEntity != null) {
 							mainEnt = maintenanceList.stream()
 									.filter(f -> f.getSessionId() != null
@@ -202,6 +188,63 @@ public class SessionDetailsServiceImpl implements SessionDetailsService {
 								maintenanceRepository.save(newMainEnt);
 								maintenanceList.add(newMainEnt);
 							}
+						}						
+					}
+					
+					
+					//If Session wise Maintenance not found then Maintenance will get from current Session.
+//					if(mainEnt == null) {
+//						mainEnt = maintenanceList.stream()
+//								.filter(f -> f.getSessionId() != null
+//										&& f.getSessionId() == userContext.getSessionId()).findFirst().orElse(null);
+//					}
+					dto.setAmount(Double.valueOf(0));
+					if(mainEnt != null) {
+						if(ApiConstants.FLAT_TYPE_DOUBLE.equals(flatType)) {
+							dto.setAmount(mainEnt.getAmount()*2);
+						} else {
+							dto.setAmount(mainEnt.getAmount());
+						}
+					}
+				} else {
+					throw new RuntimeException("Session not found.");
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void addSessionIdAndMaintenanceOnList(Long apartmentId, List<PaymentDetailsDTO> list, Long flatId) {
+		
+		if(list != null && !list.isEmpty()) {
+			String flatType = flatDetailsRepository.getFlatType(apartmentId, flatId);
+			List<SessionDetailsEntity> sessionList = sessionDetailsRepository.getAll(apartmentId);
+			List<MaintenanceEntity> maintenanceList = maintenanceRepository.getAllActiveMaintenanceForFlat(apartmentId, flatId);
+			
+			
+			for(PaymentDetailsDTO dto : list) {
+				
+				SessionDetailsEntity sessionDetailsEntity = Utils.getSessionDetailsByYearAndMonth(sessionList, dto.getPaymentYear(), dto.getPaymentMonth());
+
+				if(sessionDetailsEntity != null) {
+					dto.setPaymentForSessionId(sessionDetailsEntity.getId());
+					dto.setPaymentForSessionName(sessionDetailsEntity.getName());
+					
+					
+					//Session wise Maintenance
+					MaintenanceEntity mainEnt = maintenanceList.stream()
+							.filter(f -> f.getSessionId() != null
+									&& f.getSessionId() == sessionDetailsEntity.getId()).findFirst().orElse(null);
+					
+					//If Session wise Maintenance not found then Maintenance will get from previous Session
+					if(mainEnt == null) {
+												
+						SessionDetailsEntity prevSessionDetailsEntity = Utils.getPreviousSessionDetailsByCurrentSessionFromDate(sessionList, sessionDetailsEntity.getFromDate());
+						if(prevSessionDetailsEntity != null) {
+							mainEnt = maintenanceList.stream()
+									.filter(f -> f.getSessionId() != null
+											&& f.getSessionId() == prevSessionDetailsEntity.getId()).findFirst().orElse(null);
+							
 						}						
 					}
 					
@@ -319,5 +362,18 @@ public class SessionDetailsServiceImpl implements SessionDetailsService {
 		}
 		
 		return true;
+	}
+	
+	public void getSessionDetails(Boolean isForAllProject) {
+		UserContext userContext = Utils.getUserContext();
+		
+		SessionDetailsEntity sessionDtls = null;
+		if(isForAllProject) {
+			
+		} else {
+			sessionDtls = sessionDetailsRepository.findById(userContext.getSessionId()).get();
+		}
+		
+		
 	}
 }

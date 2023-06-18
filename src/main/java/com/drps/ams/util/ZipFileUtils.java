@@ -10,8 +10,7 @@ import com.drps.ams.bean.UserContext;
 
 public class ZipFileUtils {
     public static File createZip(UserContext userContext, String path, String folderName, String namePrefix) throws Exception {
-    	String sessionName = userContext.getSessionDetailsEntity().getName();
-		path = path + "/" + sessionName;
+		
         String folderPath = path+"/"+folderName;
         String zipFilePath = path+"/"+(namePrefix == null ? "" : namePrefix+"-")+folderName+".zip";
     	

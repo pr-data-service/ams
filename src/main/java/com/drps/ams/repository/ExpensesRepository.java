@@ -1,5 +1,6 @@
 package com.drps.ams.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,14 @@ public interface ExpensesRepository extends JpaRepository<ExpensesEntity, Long>,
 	
 	@Query("SELECT f FROM ExpensesEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
 	List<ExpensesEntity> getAll(Long apartmentId, Long sessionId);
+	
+	@Query("SELECT e, CONCAT(u.firstName, ' ', u.lastName) as createdBy, ev.name" 
+			+" FROM ExpensesEntity e" 
+			+" INNER JOIN UserDetailsEntity u ON u.id = e.createdBy" 
+			+" LEFT JOIN EventsEntity ev ON ev.id = e.eventId" 
+			+" WHERE e.apartmentId = :apartmentId" 
+			+" AND e.sessionId = :sessionId" 
+			+" AND (ev.id = e.eventId OR e.eventId IS NULL)" 
+			+" AND e.expenseDate BETWEEN :startDate AND :endDate")
+	public List<Object[]> getMonthlyExpensesList (Long apartmentId, Long sessionId, Date startDate, Date endDate);
 }

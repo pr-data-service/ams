@@ -35,6 +35,9 @@ public class EmailServiceEntity {
 
 	@Column(name = "TYPE")
 	private String type;
+	
+	@Column(name = "NAME")
+	private String name;
 
 	@Column(name = "IS_ACTIVE", columnDefinition = "true")
 	private Boolean isActive;

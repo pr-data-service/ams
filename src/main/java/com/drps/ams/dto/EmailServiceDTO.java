@@ -10,6 +10,8 @@ public class EmailServiceDTO {
 	public Long id;
 
 	public String type;
+	
+	public String name;
 
 	public Boolean isActive;
 }

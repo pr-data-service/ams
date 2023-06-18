@@ -1,45 +1,58 @@
 package com.drps.ams.service.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 
 import com.drps.ams.bean.UserContext;
+import com.drps.ams.cache.FlatDetailsCacheService;
 import com.drps.ams.dbquery.DBQueryExecuter;
 import com.drps.ams.dbquery.QueryMaker;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.ExpenseItemsDTO;
-import com.drps.ams.dto.FlatDetailsDTO;
 import com.drps.ams.dto.RequestParamDTO;
 import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.dto.UserPasswordDTO;
-import com.drps.ams.entity.ExpenseItemsEntity;
-import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.DuplicateRecordException;
 import com.drps.ams.exception.InvalidConfirmPassword;
 import com.drps.ams.exception.InvalidCredentialsException;
 import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
-import com.drps.ams.exception.UserContextNotFoundException;
 import com.drps.ams.repository.LinkFlatDetailsAndUserDetailsRepository;
 import com.drps.ams.repository.UserDetailsRepository;
 import com.drps.ams.service.UserDetailsService;
-import com.drps.ams.util.Utils;
 import com.drps.ams.util.ApiConstants;
-import com.drps.ams.util.DynamicQuery;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.drps.ams.util.FileUtils;
+import com.drps.ams.util.Utils;
 
 import lombok.NonNull;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
+	
+	@Value("${file.storage.path}")
+	String FILE;
+	
+	String SIGNATURE_PATH = "/user-signature";
 	
 	@Autowired
 	UserDetailsRepository userDetailsRepository;
@@ -49,6 +62,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	
 	@Autowired
 	DBQueryExecuter dbQueryExecuter;
+	
+	@Autowired
+	FlatDetailsCacheService flatDetailsCacheService;
 
 	@Override
 	public ApiResponseEntity saveOrUpdate(@NonNull UserDetailsDTO userDetailsDTO) throws Exception {
@@ -75,7 +91,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		
 			
 		userDetailsRepository.save(userDetailsEntity);
-			
+		//Removing cache
+		flatDetailsCacheService.removeCacheByApartmentId(userContext.getApartmentId());	
+		
 		BeanUtils.copyProperties(userDetailsEntity, userDetailsDTO);	
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, userDetailsDTO);
@@ -115,6 +133,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		
 		if(id != null && id > 0) {
 			userDetailsRepository.deleteById(id);
+			//Removing cache
+			flatDetailsCacheService.removeCacheByApartmentId(userContext.getApartmentId());	
 			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS));
 		} else {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
@@ -127,6 +147,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		
 		if(ids != null && ids.size() > 0) {
 			userDetailsRepository.deleteAllById(ids);
+			//Removing cache
+			flatDetailsCacheService.removeCacheByApartmentId(userContext.getApartmentId());
 			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS));
 		} else {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
@@ -229,5 +251,48 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
 		}
 		
+	}
+	
+	@Override
+	public ApiResponseEntity uploadSignature(MultipartFile file) throws IOException {
+		
+		UserContext userContext = Utils.getUserContext();
+
+		if(file.getContentType().equals("image/jpeg")) {
+			String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+			path = path + SIGNATURE_PATH;
+			
+			Path fileStorageLocation = Paths.get(path).toAbsolutePath().normalize();
+			Files.createDirectories(fileStorageLocation);
+			
+			String fileName = "signature_" + userContext.getUserId() +".jpg";  			
+			
+			Path root = Paths.get(path + "/" +fileName);
+			Files.copy(file.getInputStream(), root,  StandardCopyOption.REPLACE_EXISTING);
+			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, "Signature Uploaded Successfully");
+		} else {
+			throw new UnsupportedMediaTypeStatusException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_UNSUPPORTED_MEDIA_TYPE)); 
+		}
+	}
+	
+	@Override
+	public void getSignature(HttpServletRequest req, HttpServletResponse res) {
+		
+		UserContext userContext = Utils.getUserContext();
+		
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		path = path + SIGNATURE_PATH;
+		
+		String fileName = "signature_" + userContext.getUserId() +".jpg";  			
+		File image = new File(path+"/"+fileName);
+		
+		if(!image.exists()) {
+			throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+		}
+		try {
+			Utils.downloadPdfFile(req, res, image);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

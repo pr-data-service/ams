@@ -25,7 +25,7 @@ public class ApiConstants {
 	public static final int RESP_STATUS_DUPLICATE_RECORD_EXCEPTION = 222;
 	public static final int RESP_STATUS_INVALID_EMAIL_EXCEPTION = 223;
 	
-	
+	public static final int RESP_STATUS_UNSUPPORTED_MEDIA_TYPE = 230;
 	
 	private static final String RESP_STATUS_MSG_SUCCESS = "SUCCESS";
 	private static final String RESP_STATUS_MSG_NO_RECORD_FOUND = "Record not found";
@@ -34,6 +34,7 @@ public class ApiConstants {
 	private static final String RESP_STATUS_MSG_USER_CONTEXT_NOT_FOUND = "User Context not found";
 	private static final String RESP_STATUS_MSG_INVALID_CONFIRM_PASSWORD = "New password and confirm password should be same.";
 	private static final String RESP_STATUS_MSG_INVALID_CREDENTIALS = "Invalid credentials.";
+	private static final String RESP_STATUS_MSG_UNSUPPORTED_MEDIA_TYPE = "Unsupported media type";
 	
 	public static final Map<Integer, String> STATUS_MESSAGE = new HashMap<>();
 	static {
@@ -46,6 +47,7 @@ public class ApiConstants {
 		STATUS_MESSAGE.put(RESP_STATUS_DUPLICATE_RECORD_EXCEPTION, RESP_STATUS_MSG_DUPLICATE_RECORD);
 		STATUS_MESSAGE.put(RESP_STATUS_INVALID_CONFIRM_PASSWORD_EXCEPTION, RESP_STATUS_MSG_INVALID_CONFIRM_PASSWORD);
 		STATUS_MESSAGE.put(RESP_STATUS_INVALID_CREDENTIALS_EXCEPTION, RESP_STATUS_MSG_INVALID_CREDENTIALS);
+		STATUS_MESSAGE.put(RESP_STATUS_UNSUPPORTED_MEDIA_TYPE, RESP_STATUS_MSG_UNSUPPORTED_MEDIA_TYPE);
 	}
 	
 	public static final String OBJECT_USER_DETAILS = "USER_DETAILS";

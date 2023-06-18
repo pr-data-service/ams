@@ -2,6 +2,7 @@ package com.drps.ams.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.drps.ams.bean.UserContext;
+import com.drps.ams.cache.FlatDetailsCacheService;
 import com.drps.ams.dbquery.DBQueryExecuter;
 import com.drps.ams.dbquery.QueryMaker;
 import com.drps.ams.dto.ApiResponseEntity;
@@ -23,11 +25,13 @@ import com.drps.ams.dto.FlatDetailsDTO;
 import com.drps.ams.entity.ExpenseItemsEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.UserDetailsEntity;
+import com.drps.ams.entity.join.FlatDetailsAndUserDetailsEntity;
 import com.drps.ams.exception.DuplicateRecordException;
 import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.exception.UserContextNotFoundException;
 import com.drps.ams.repository.FlatDetailsRepository;
+import com.drps.ams.repository.LinkFlatDetailsAndUserDetailsRepository;
 import com.drps.ams.service.CommonService;
 import com.drps.ams.service.FlatDetailsService;
 import com.drps.ams.util.Utils;
@@ -52,6 +56,12 @@ public class FlatDetailsServiceImpl implements FlatDetailsService {
 	
 	@Autowired
 	DBQueryExecuter dbQueryExecuter;
+	
+	@Autowired
+	LinkFlatDetailsAndUserDetailsRepository linkFlatDetailsAndUserDetailsRepository;
+	
+	@Autowired
+	FlatDetailsCacheService flatDetailsCacheService;
 	
 	@Override
 	public ApiResponseEntity saveOrUpdate(@NonNull FlatDetailsDTO flatDetailsDTO) throws Exception {
@@ -154,5 +164,41 @@ public class FlatDetailsServiceImpl implements FlatDetailsService {
 		}
 		
 		return list != null && list.size() > 0 ? true : false;
+	}
+	
+	@Override
+	public Map<Long, FlatDetailsAndUserDetailsEntity> getFlatDetailsAndUserDetailsMap(Long apartmentId) {
+		
+		List<FlatDetailsAndUserDetailsEntity> list = linkFlatDetailsAndUserDetailsRepository.getFlatAndUserByApartmentId(apartmentId);
+		Map<Long, FlatDetailsAndUserDetailsEntity> flatUserMap = list.stream()
+		        .collect(Collectors.toMap(dto -> dto.getFlatDetails().getId(), dto -> dto));
+		
+		
+		return flatUserMap;
+	}
+	
+	@Override
+	public FlatDetailsEntity findById(long aprtmentId, long flatId) {
+		try {
+			logger.info("getting FlatDetailsEntity from database.................");
+			Map<Long, FlatDetailsAndUserDetailsEntity> map = flatDetailsCacheService.getFlatDetailsAndUserDetailsMapByApartmentId(aprtmentId);
+			return map.get(flatId).getFlatDetails();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
+	public FlatDetailsAndUserDetailsEntity findFlatDetailsAndUserDetailsById(Long aprtmentId, Long flatId) {
+		try {
+			Map<Long, FlatDetailsAndUserDetailsEntity> map = flatDetailsCacheService.getFlatDetailsAndUserDetailsMapByApartmentId(aprtmentId);
+			return map.get(flatId);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

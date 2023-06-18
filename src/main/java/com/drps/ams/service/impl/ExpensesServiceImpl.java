@@ -1,7 +1,12 @@
 package com.drps.ams.service.impl;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +36,7 @@ import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.PaymentDetailsEntity;
 import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
+import com.drps.ams.exception.FileStorageException;
 import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.exception.UserContextNotFoundException;
@@ -46,7 +52,9 @@ import com.drps.ams.util.ZipFileUtils;
 import com.drps.pdf.ExpenseVoucherPDF;
 import com.drps.pdf.PaymentReceiptPDF;
 import com.drps.ams.util.ApiConstants;
+import com.drps.ams.util.DateUtils;
 import com.drps.ams.util.DynamicQuery;
+import com.drps.ams.util.ExcelFiles;
 import com.drps.ams.util.FileUtils;
 
 import lombok.NonNull;
@@ -54,8 +62,10 @@ import lombok.NonNull;
 @Service
 public class ExpensesServiceImpl implements ExpensesService {
 
-	@Value("${vouchar.storage.path}")
+	@Value("${file.storage.path}")
 	String FILE;
+	
+	String VOUCHAR_PATH = "/vouchar";
 	
 	@Autowired
 	ExpensesRepository expensesRepository;
@@ -77,9 +87,9 @@ public class ExpensesServiceImpl implements ExpensesService {
 	
 	@Autowired
 	NotesService notesService;
-	
-	@Override
+
 	@Transactional
+	@Override
 	public ApiResponseEntity saveOrUpdate(@NonNull ExpensesDTO expensesDTO) throws Exception {
 		
 		UserContext userContext = Utils.getUserContext();
@@ -98,8 +108,8 @@ public class ExpensesServiceImpl implements ExpensesService {
 		ExpensesEntity expensesEntity = null;
 		ExpenseItemsEntity expensesItemEntity = null;
 		if(expensesDTO.getId() != null && expensesDTO.getId() > 0) {
-			expensesEntity = expensesRepository.findById(expensesDTO.getId()).get();
-			BeanUtils.copyProperties(expensesDTO, expensesEntity, Utils.getIgnoreEntityPropsOnUpdate(null));
+			expensesEntity = expensesRepository.getById(expensesDTO.getId());
+			BeanUtils.copyProperties(expensesDTO, expensesEntity, Utils.getIgnoreEntityPropsOnUpdate(new String[] {"id"}));
 			expensesEntity.setModifiedBy(userContext.getUserDetailsEntity().getId());
 			expensesRepository.save(expensesEntity);
 			
@@ -142,7 +152,7 @@ public class ExpensesServiceImpl implements ExpensesService {
 		UserContext userContext = Utils.getUserContext();
 		
 		RequestParamDTO reqParamDto = RequestParamDTO.getInstance(reqParams);		
-		List<ExpensesDTO> rtnList = dbQueryExecuter.executeQuery(new QueryMaker(reqParamDto, ExpensesDTO.class));
+		List<ExpensesDTO> rtnList = dbQueryExecuter.executeQuery(new QueryMaker<ExpensesDTO>(reqParamDto, ExpensesDTO.class));
 		commonService.addUserDetailsToDTO(rtnList, ExpensesDTO.class);
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
@@ -219,6 +229,8 @@ public class ExpensesServiceImpl implements ExpensesService {
 			if(entity != null) {
 				List<ExpenseItemsEntity> expenseItemList = expenseItemsRepository.findByExpenseId(userContext.getApartmentId(), userContext.getSessionId(), id);
 				
+				String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+				path = path + VOUCHAR_PATH;
 				String filePath = FileUtils.prepairFilePathForVouchar(userContext, FILE, entity);
 				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null);
 				file = pdf.getFile();
@@ -274,8 +286,9 @@ public class ExpensesServiceImpl implements ExpensesService {
 		UserContext userContext = Utils.getUserContext();
 		List <VoucherByMonthDTO> dtoList = new ArrayList<VoucherByMonthDTO>();
 		
-		String sessionName = userContext.getSessionDetailsEntity().getName();
-		String path = FILE + "/" + sessionName;
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		path = path + VOUCHAR_PATH;
+		
 		File parentFolder = new File(path);
 		File []folderAndFiles = parentFolder.listFiles();
 		
@@ -293,7 +306,62 @@ public class ExpensesServiceImpl implements ExpensesService {
 	@Override
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
-		return ZipFileUtils.createZip(userContext, FILE, folderName, "expense");
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		path = path + VOUCHAR_PATH;
+		expensesExcelByMonth (path, folderName);
+		return ZipFileUtils.createZip(userContext, path, folderName, "expense");
 	}
 	
+	
+	public void expensesExcelByMonth (String path, String folderName) {
+		UserContext userContext = Utils.getUserContext();
+
+		Date firstDay = DateUtils.stringToDate("01-"+folderName);
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(firstDay);
+		int lastDayOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+		calendar.set(Calendar.DAY_OF_MONTH, lastDayOfMonth);
+		Date lastDay = calendar.getTime();
+		
+		String startDt = DateUtils.dateToStringForDB(firstDay) + " 00:00:00";
+		String endDt = DateUtils.dateToStringForDB(lastDay) + " 23:59:59";
+		List<Object[]> list = expensesRepository.getMonthlyExpensesList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTimeForDB(startDt), DateUtils.stringToDateTimeForDB(endDt));
+		List<ExpenseItemsEntity> itemsList = expenseItemsRepository.getMonthlyExpenseItemsList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTimeForDB(startDt), DateUtils.stringToDateTimeForDB(endDt));
+
+		List<ExpensesDTO> listDto = new ArrayList<>();
+		for(Object[] arr : list) {
+			ExpensesEntity entity = (ExpensesEntity)arr[0];
+			String createdBy=(String)arr[1];
+			String eventName = (String)arr[2]; 
+			ExpensesDTO dto = new ExpensesDTO();
+			BeanUtils.copyProperties(entity, dto);
+			dto.setCreatedByName(createdBy);
+			dto.setEventName(eventName);
+			
+			listDto.add(dto);
+		}
+	
+
+		List<ExpenseItemsDTO> itemsListDto = new ArrayList<>();
+		for(ExpenseItemsEntity entity : itemsList) {
+			ExpenseItemsDTO dto = new ExpenseItemsDTO();
+			BeanUtils.copyProperties(entity, dto);
+			
+			itemsListDto.add(dto);
+		}
+		
+		// Month wise dir creation.....		
+		path = path + "/" + folderName;
+		
+		Path fileStorageLocation = Paths.get(path).toAbsolutePath().normalize();
+
+        try {
+            Files.createDirectories(fileStorageLocation);
+            String fileName = path + "/" +  "voucher-receipt_"+ folderName;
+                        
+            ExcelFiles.expensesWithItems(listDto, itemsListDto, folderName, fileName);
+        } catch (Exception ex) {
+            throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
+        }
+	}
 }

@@ -65,6 +65,7 @@ import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.DateUtils;
 import com.drps.ams.util.ExcelFileForPaymentDetails;
 import com.drps.ams.util.ExcelFileUtils;
+import com.drps.ams.util.ExcelFiles;
 import com.drps.ams.util.FileUtils;
 import com.drps.ams.util.Utils;
 import com.drps.ams.util.ZipFileUtils;
@@ -75,8 +76,10 @@ public class PaymentServiceImpl implements PaymentService {
 
 	private static final Logger logger = LogManager.getLogger(PaymentServiceImpl.class);
 
-	@Value("${payment-receipt.storage.path}")
+	@Value("${file.storage.path}")
 	String FILE;
+	
+	String PAYMENT_RECEIPT_PATH = "/payment-receipt";
 	
 	@Autowired
 	FlatDetailsService flatDetailsService;
@@ -348,7 +351,10 @@ public class PaymentServiceImpl implements PaymentService {
 				List<EventsEntity> eventList = eventsRepository.findAll();
 				Map<Long, String> eventListMap = eventList.stream().collect(Collectors.toMap(EventsEntity::getId, EventsEntity::getName));
 				
-				String filePath = FileUtils.prepairFilePathForPaymentReceipt(userContext, FILE, entity, flatDetailsEntity);
+				
+				String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+				path = path + PAYMENT_RECEIPT_PATH;
+				String filePath = FileUtils.prepairFilePathForPaymentReceipt(userContext, path, entity, flatDetailsEntity);
 				PaymentReceiptPDF pdf = new PaymentReceiptPDF(filePath, entity, paymentItemList, result, eventListMap);
 				file = pdf.getFile();
 				
@@ -405,8 +411,9 @@ public class PaymentServiceImpl implements PaymentService {
 		UserContext userContext = Utils.getUserContext();
 		List <PaymentSlipByMonthsDTO> dtoList = new ArrayList<PaymentSlipByMonthsDTO>();
 		
-		String sessionName = userContext.getSessionDetailsEntity().getName();
-		String path = FILE + "/" + sessionName;
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		path = path + PAYMENT_RECEIPT_PATH;
+		
 		File parentFolder = new File(path);
 		File []folderAndFiles = parentFolder.listFiles();
 		
@@ -424,11 +431,13 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
-		maintenanceExcelByMonth(folderName);
-		return ZipFileUtils.createZip(userContext, FILE, folderName, "payment");
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		path = path + PAYMENT_RECEIPT_PATH;
+		maintenanceExcelByMonth(path, folderName);
+		return ZipFileUtils.createZip(userContext, path, folderName, "payment");
 	}
 	
-	public void maintenanceExcelByMonth (String folderName) {
+	public void maintenanceExcelByMonth (String path, String folderName) {
 		UserContext userContext = Utils.getUserContext();
 
 		Date firstDay = DateUtils.stringToDate("01-"+folderName);
@@ -471,12 +480,6 @@ public class PaymentServiceImpl implements PaymentService {
 			detailsListDto.add(dto);
 		}
 		
-		
-		String path = FILE;
-		// Create dir for Session
-		String sessionName = userContext.getSessionDetailsEntity().getName();
-		path = path + "/" + sessionName;
-		
 		// Month wise dir creation.....		
 		path = path + "/" + folderName;
 		
@@ -485,13 +488,8 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             Files.createDirectories(fileStorageLocation);
             String fileName = path + "/" +  "payment-receipt_"+ folderName;
-    		List<Object> headerFields1 = Arrays.asList(new String[] {"Srl No", "Bill No", "Flat Id", "Amount", "Payment Mode", "Payment Mode Ref", "Payment Date", "Payment By", "Is Canceled", "Cancel Remarks", "Created Date", "Created By"}) ; 
-    		ExcelFileUtils.createExcelSheet(headerFields1, listDto, folderName, fileName);
             
-    		
-    		fileName = path + "/" +  "audit-payment-receipt_"+ folderName;
-            List<Object> headerFields2 = Arrays.asList(new String[] {"Srl No", "Bill No", "Flat Id", "Payment Mode", "Payment Mode Ref", "Payment Date", "Amount", "Payment By", "Is Canceled", "Cancel Remarks"}) ; 
-            ExcelFileForPaymentDetails.createExcelSheet(headerFields2, listDto, detailsListDto, folderName, fileName);
+            ExcelFiles.paymentWithDetails(listDto, detailsListDto, folderName, fileName);
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }

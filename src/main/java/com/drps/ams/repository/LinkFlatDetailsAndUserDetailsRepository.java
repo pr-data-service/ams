@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.drps.ams.entity.LinkFlatDetailsAndUserDetailsEntity;
+import com.drps.ams.entity.join.FlatDetailsAndUserDetailsEntity;
 
 @Repository
 public interface LinkFlatDetailsAndUserDetailsRepository extends JpaRepository<LinkFlatDetailsAndUserDetailsEntity, Long>{
@@ -31,4 +32,9 @@ public interface LinkFlatDetailsAndUserDetailsRepository extends JpaRepository<L
 	
 	@Query("SELECT l FROM LinkFlatDetailsAndUserDetailsEntity l WHERE l.apartmentId = :apartmentId AND l.flatId = :flatId AND l.isActive = 1")
 	public List<LinkFlatDetailsAndUserDetailsEntity> findByFlatId(Long apartmentId, Long flatId);
+	
+	@Query("SELECT new com.drps.ams.entity.join.FlatDetailsAndUserDetailsEntity(l, f, u) FROM FlatDetailsEntity f"
+			+" INNER JOIN LinkFlatDetailsAndUserDetailsEntity l ON l.flatId = f.id AND l.isActive = 1 AND l.apartmentId = f.apartmentId"
+			+" INNER JOIN UserDetailsEntity u ON l.userId = u.id AND l.apartmentId = u.apartmentId WHERE f.apartmentId = :apartmentId")
+	public List<FlatDetailsAndUserDetailsEntity> getFlatAndUserByApartmentId(Long apartmentId);
 }

@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +27,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.FileCopyUtils;
 
 import com.drps.ams.bean.UserContext;
+import com.drps.ams.dto.PaymentDetailsDTO;
+import com.drps.ams.entity.PaymentDetailsEntity;
+import com.drps.ams.entity.SessionDetailsEntity;
 import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.UserContextNotFoundException;
 
@@ -168,5 +174,129 @@ public class Utils {
 			FileCopyUtils.copy(inputStream, response.getOutputStream());
 		}
     }
-
+    
+    public static SessionDetailsEntity getSessionDetailsByYearAndMonth(List<SessionDetailsEntity> sessionList, int year, int month ) {
+    	LocalDate mntDt = LocalDate.of(year, month, 1);
+		
+		SessionDetailsEntity sessionDetailsEntity = sessionList.stream().filter( f -> {
+			LocalDate frmDt = new java.sql.Date(f.getFromDate().getTime()).toLocalDate();
+			LocalDate toDt = new java.sql.Date(f.getToDate().getTime()).toLocalDate();
+			
+			return mntDt.isEqual(frmDt) || ( mntDt.isAfter(frmDt) && mntDt.isBefore(toDt) ) ? true : false;
+		}).findAny().orElse(null);
+		
+		return sessionDetailsEntity;
+    }
+    
+    public static SessionDetailsEntity getPreviousSessionDetailsByCurrentSessionFromDate(List<SessionDetailsEntity> sessionList, Date fromDate ) {
+    	SessionDetailsEntity prevSessionDetailsEntity = sessionList.stream().filter( f -> {
+			LocalDate curntFrmDt = new java.sql.Date(fromDate.getTime()).toLocalDate();
+			curntFrmDt = curntFrmDt.minusDays(1);
+			LocalDate frmDt = new java.sql.Date(f.getFromDate().getTime()).toLocalDate();
+			LocalDate toDt = new java.sql.Date(f.getToDate().getTime()).toLocalDate();
+			
+			return curntFrmDt.isEqual(toDt) || ( curntFrmDt.isAfter(frmDt) && curntFrmDt.isBefore(toDt) ) ? true : false;
+		}).findAny().orElse(null);
+		
+		return prevSessionDetailsEntity;
+    }
+    
+    public static boolean isDueTillCurrentDateOrLessThan(PaymentDetailsDTO dto) {
+    	LocalDate currentDate = LocalDate.now(ZoneId.systemDefault());
+		int curYear = currentDate.getYear();
+		int curMonth = currentDate.getMonthValue();
+		if(curYear > dto.getPaymentYear()) {
+			return true;
+		} else if(curYear == dto.getPaymentYear() && curMonth >= dto.getPaymentMonth()) {
+			return true;
+		}
+		return false;
+    }
+    
+    public static List<PaymentDetailsDTO> getDuesList(Long flatId, String flatNo, PaymentDetailsEntity lastPayment, LocalDate currentDate) {
+    	List<PaymentDetailsDTO> duesList = new ArrayList<>();
+    	if(lastPayment != null && currentDate != null) {
+			
+			Integer year = lastPayment.getPaymentYear();
+			Integer month = lastPayment.getPaymentMonth()+1;
+			
+			Integer currentYear = currentDate.getYear();
+			Integer currentMonth = currentDate.getMonth().getValue();
+			
+			PaymentDetailsDTO payDtlsDto = null;
+			
+			long tempRecId = 1;
+			int tempfromMonth = month;
+			int tempToMonth = 12;
+			for(int yr = year; yr <= currentYear; yr++) {
+				
+				if(yr == currentYear) {
+					tempToMonth = currentMonth;
+				}
+				for(int mn = tempfromMonth; mn <= tempToMonth; mn++) {
+					payDtlsDto = new PaymentDetailsDTO();
+					payDtlsDto.setId(tempRecId++);
+					payDtlsDto.setFlatId(flatId);
+					payDtlsDto.setFlatNo(flatNo);
+					payDtlsDto.setPaymentMonth(mn);
+					payDtlsDto.setPaymentMonthName(DateUtils.MONTH_NAME_MAP.getOrDefault(mn, ""));
+					payDtlsDto.setPaymentYear(yr);
+					duesList.add(payDtlsDto);
+				}
+				tempfromMonth = 1;
+			}
+			
+		} else {
+			throw new RuntimeException("Error on create due list.");
+		}
+		return duesList;
+    }
+    
+    /*
+     * Get last payment from Session Details while last payment not found
+     */
+    public static PaymentDetailsEntity validateLastPayment(PaymentDetailsEntity lastPayment, SessionDetailsEntity sessionDtls) {
+    	if(sessionDtls != null) {
+			if(lastPayment == null && sessionDtls.getFromDate() != null) {
+				
+				LocalDate localDate = sessionDtls.getFromDate().toInstant()
+					      .atZone(ZoneId.systemDefault())
+					      .toLocalDate();
+				
+				lastPayment = new PaymentDetailsEntity();
+				lastPayment.setPaymentYear(localDate.getYear());
+				lastPayment.setPaymentMonth(localDate.getMonth().getValue()-1);
+				
+			}
+    	}
+    	
+    	return lastPayment;
+    }
+    
+    public static LocalDate getCurrentDateFromSessionDetails(SessionDetailsEntity sessionDtls) {
+    	LocalDate currentDate = LocalDate.now(ZoneId.systemDefault());
+    	if(sessionDtls != null && sessionDtls.getToDate() != null) {
+			LocalDate toDt = sessionDtls.getToDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			//currentDate = currentDate.isAfter(toDt) ? toDt : currentDate; //currently paused
+			currentDate = toDt;
+		}
+		return currentDate;
+    }
+    
+    public static SessionDetailsEntity getCurrentSessionDetails(List<SessionDetailsEntity> sessionDtlsList) {
+    	SessionDetailsEntity sessionDetails = null;
+    	if(sessionDtlsList != null && !sessionDtlsList.isEmpty()) {
+    		LocalDate currentDate = LocalDate.now(ZoneId.systemDefault());
+    		sessionDetails = sessionDtlsList.stream().filter( f -> 
+    		
+	    		currentDate.isEqual(f.getFromDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+	    		|| currentDate.isEqual(f.getToDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+	    		|| (currentDate.isAfter(f.getFromDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+	    				&& currentDate.isBefore(f.getToDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()))
+    		
+    		).findFirst().orElse(null);
+		}
+		return sessionDetails;
+    }
+    
 }

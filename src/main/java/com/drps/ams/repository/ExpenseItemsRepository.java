@@ -1,5 +1,6 @@
 package com.drps.ams.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,8 @@ public interface ExpenseItemsRepository extends JpaRepository<ExpenseItemsEntity
 	
 	@Query("SELECT m FROM ExpenseItemsEntity m WHERE m.apartmentId = :apartmentId AND m.sessionId = :sessionId AND m.expenseId = :expenseId")
 	public List<ExpenseItemsEntity> findByExpenseId(Long apartmentId, Long sessionId, Long expenseId);
+	
+	@Query("SELECT m FROM ExpenseItemsEntity m WHERE m.apartmentId = :apartmentId AND m.sessionId = :sessionId" 
+			+ " AND m.createdDate BETWEEN :startDt AND :endDt")
+	public List<ExpenseItemsEntity> getMonthlyExpenseItemsList(Long apartmentId, Long sessionId, Date startDt, Date endDt);
 }

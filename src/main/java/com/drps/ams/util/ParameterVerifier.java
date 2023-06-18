@@ -1,5 +1,6 @@
 package com.drps.ams.util;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class ParameterVerifier {
@@ -52,8 +53,8 @@ public class ParameterVerifier {
 		return str;
 	}
 	
-	public static Integer getInteger(Object arg) {
-		Integer no = 0;
+	public static int getInteger(Object arg) {
+		int no = 0;
 		try {
 			if(isValidParam(arg)) {
 				no = Integer.valueOf(String.valueOf(arg));
@@ -62,6 +63,19 @@ public class ParameterVerifier {
 			e.printStackTrace();
 		}
 		return no;
+	}
+	
+	public static boolean isBoolean(Object value) {
+	    return value != null && Arrays.stream(new String[]{"true", "false", "1", "0"})
+	            .anyMatch(b -> b.equalsIgnoreCase(String.valueOf(value)));
+	}
+	
+	public static Object getArrayValueByIndex(int index, Object ...obj) {
+		try {
+			return obj[index];
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 }

@@ -22,4 +22,6 @@ public interface SessionDetailsService {
 
 	SessionDetailsDTO saveOrUpdate(SessionDetailsDTO dto, Long apartmentId, Long userId);
 
+	void addSessionIdAndMaintenanceOnList(Long apartmentId, List<PaymentDetailsDTO> list, Long flatId);
+
 }

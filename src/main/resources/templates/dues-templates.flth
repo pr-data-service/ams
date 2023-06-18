@@ -1,0 +1,29 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head></head>
+<body>
+    <p>Sir/Madam ${firstName} ${lastName},</p>
+    <p>Please pay below mentioned dues,</p>
+    
+    <table width="50%" border="0" cellspacing="0" cellpadding="0" border="1"> 
+	    <tr style="background: aliceblue;">  
+		    <th align="center">Month</th>
+		    <th align="center">Session</th>
+	    </tr>   
+	    <tr>  
+		    <td align="center">January, 2023</td>
+		    <td align="center">Session 2022-23</td>
+	    </tr>
+	    <tr>  
+		    <td align="center">February, 2023</td>
+		    <td align="center">Session 2022-23</td>
+	    </tr>
+	    <tr>  
+		    <td align="center">March, 2023</td>
+		    <td align="center">Session 2022-23</td>
+	    </tr>  
+    </table>    
+    <div style="margin-top: 20px;">Thanks,</div>
+    <div>Economy Apartment</div>
+
+</body>
+</html>

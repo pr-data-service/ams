@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.drps.ams.bean.UserContext;
 import com.drps.ams.entity.ExpensesEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
@@ -13,6 +15,8 @@ import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.exception.FileStorageException;
 
 public class FileUtils {
+	
+	@Deprecated
 	public static void createFolder (String path, String folderName) {
 			
 			File newDirectory = new File (path + "/" + folderName);
@@ -30,6 +34,7 @@ public class FileUtils {
 			}
 	}
 	
+	@Deprecated
 	public static void createFile (String path,String fileName) {
 		try {
 			File newFile = new File(path + fileName);
@@ -60,6 +65,7 @@ public class FileUtils {
 		}
 	}
 	
+	@Deprecated
 	public static void createDir(String path) {
 		String osName = System.getProperty("os.name");
 		System.out.println("OS Name: " + osName);
@@ -79,9 +85,6 @@ public class FileUtils {
 	
 	public static String prepairFilePathForPaymentReceipt(UserContext userContext, String path, PaymentEntity entity, FlatDetailsEntity flatDetailsEntity ){
 		
-		// Create dir for Session
-		String sessionName = userContext.getSessionDetailsEntity().getName();
-		path = path + "/" + sessionName;
 		
 		// Month wise dir creation.....
 		String monthYear = DateUtils.dateToString(entity.getPaymentDate(), "MM-yyyy");
@@ -106,9 +109,7 @@ public class FileUtils {
 	
 	public static String prepairFilePathForVouchar(UserContext userContext, String path, ExpensesEntity entity){
 		
-		// Create dir for Session
-		String sessionName = userContext.getSessionDetailsEntity().getName();
-		path = path + "/" + sessionName;
+		path = path + "/" + getApplicationBaseFilePath(userContext, path);
 		
 		// Month wise dir creation.....
 		String monthYear = DateUtils.dateToString(entity.getExpenseDate(), "MM-yyyy");
@@ -128,6 +129,19 @@ public class FileUtils {
 			fileName = fileName + "_canceled";
 		}
 		path = path + "/" + fileName + ".pdf";
+		return path;
+	}
+	
+	public static String getApplicationBaseFilePath(UserContext userContext, String rootPath) {
+		// dir for Apartment
+		Long aprtmentId = userContext.getApartmentId();
+		
+		// dir for Session
+		String sessionName = userContext.getSessionDetailsEntity().getName();
+		String path = "aprt_" + aprtmentId + "/" + sessionName;
+		if(rootPath != null && !StringUtils.isBlank(rootPath)) {
+			path = rootPath.trim() + "/" + path;
+		}
 		return path;
 	}
 }

@@ -56,6 +56,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 	
+	@ExceptionHandler(UnsupportedMediaTypeException.class)
+    public ResponseEntity<ApiResponseEntity> exception(UnsupportedMediaTypeException exception, WebRequest webRequest) {
+    	ApiResponseEntity response = new ApiResponseEntity(ApiConstants.RESP_STATUS_UNSUPPORTED_MEDIA_TYPE, exception.getMessage());      
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+	
 	@ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseEntity> exception(Exception exception, WebRequest webRequest) {
     	ApiResponseEntity response = new ApiResponseEntity(ApiConstants.RESP_STATUS_EXCEPTION, exception.getCause().getCause().getMessage());      
