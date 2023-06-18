@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -258,8 +259,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		
 		UserContext userContext = Utils.getUserContext();
 
-		if(file.getContentType().equals("image/jpeg")) {
-			String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		if(Arrays.asList("image/jpg", "image/jpeg", "image/png").contains(file.getContentType())) {
+			String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, false);
 			path = path + SIGNATURE_PATH;
 			
 			Path fileStorageLocation = Paths.get(path).toAbsolutePath().normalize();
@@ -280,7 +281,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		
 		UserContext userContext = Utils.getUserContext();
 		
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, false);
 		path = path + SIGNATURE_PATH;
 		
 		String fileName = "signature_" + userContext.getUserId() +".jpg";  			

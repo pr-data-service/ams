@@ -352,10 +352,12 @@ public class PaymentServiceImpl implements PaymentService {
 				Map<Long, String> eventListMap = eventList.stream().collect(Collectors.toMap(EventsEntity::getId, EventsEntity::getName));
 				
 				
-				String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+				String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
 				path = path + PAYMENT_RECEIPT_PATH;
 				String filePath = FileUtils.prepairFilePathForPaymentReceipt(userContext, path, entity, flatDetailsEntity);
-				PaymentReceiptPDF pdf = new PaymentReceiptPDF(filePath, entity, paymentItemList, result, eventListMap);
+				String sigPath = FileUtils.getSignatureFilePath(userContext, FILE);
+				
+				PaymentReceiptPDF pdf = new PaymentReceiptPDF(filePath, entity, paymentItemList, result, eventListMap, sigPath);
 				file = pdf.getFile();
 				
 			}
@@ -411,7 +413,7 @@ public class PaymentServiceImpl implements PaymentService {
 		UserContext userContext = Utils.getUserContext();
 		List <PaymentSlipByMonthsDTO> dtoList = new ArrayList<PaymentSlipByMonthsDTO>();
 		
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
 		path = path + PAYMENT_RECEIPT_PATH;
 		
 		File parentFolder = new File(path);
@@ -431,7 +433,7 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
 		path = path + PAYMENT_RECEIPT_PATH;
 		maintenanceExcelByMonth(path, folderName);
 		return ZipFileUtils.createZip(userContext, path, folderName, "payment");

@@ -1,6 +1,7 @@
 package com.drps.ams.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -109,7 +110,7 @@ public class FileUtils {
 	
 	public static String prepairFilePathForVouchar(UserContext userContext, String path, ExpensesEntity entity){
 		
-		path = path + "/" + getApplicationBaseFilePath(userContext, path);
+		path = path + "/" + getApplicationBaseFilePath(userContext, path, true);
 		
 		// Month wise dir creation.....
 		String monthYear = DateUtils.dateToString(entity.getExpenseDate(), "MM-yyyy");
@@ -132,16 +133,36 @@ public class FileUtils {
 		return path;
 	}
 	
-	public static String getApplicationBaseFilePath(UserContext userContext, String rootPath) {
+	public static String getApplicationBaseFilePath(UserContext userContext, String rootPath, boolean isSessionBased) {
 		// dir for Apartment
 		Long aprtmentId = userContext.getApartmentId();
 		
 		// dir for Session
 		String sessionName = userContext.getSessionDetailsEntity().getName();
-		String path = "aprt_" + aprtmentId + "/" + sessionName;
+		String path = "aprt_" + aprtmentId;
+		
+		if(isSessionBased) {
+			path = path + "/" + sessionName;
+		}
 		if(rootPath != null && !StringUtils.isBlank(rootPath)) {
 			path = rootPath.trim() + "/" + path;
 		}
 		return path;
+	}
+	
+	public static String getSignatureFilePath(UserContext userContext, String rootPath) {
+		String sigPath = FileUtils.getApplicationBaseFilePath(userContext, rootPath, false);
+		sigPath = sigPath + "/user-signature/signature_" + userContext.getUserId();
+		
+		if(new File(sigPath + ".jpg").exists()) {
+			sigPath = sigPath + ".jpg";
+		} else if(new File(sigPath + ".jpeg").exists()) {
+			sigPath = sigPath + ".jpeg";
+		} else if(new File(sigPath + ".png").exists()) {
+			sigPath = sigPath + ".png";
+		} else {
+			return null;
+		}
+		return sigPath;
 	}
 }

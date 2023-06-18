@@ -229,7 +229,7 @@ public class ExpensesServiceImpl implements ExpensesService {
 			if(entity != null) {
 				List<ExpenseItemsEntity> expenseItemList = expenseItemsRepository.findByExpenseId(userContext.getApartmentId(), userContext.getSessionId(), id);
 				
-				String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+				String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
 				path = path + VOUCHAR_PATH;
 				String filePath = FileUtils.prepairFilePathForVouchar(userContext, FILE, entity);
 				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null);
@@ -286,7 +286,7 @@ public class ExpensesServiceImpl implements ExpensesService {
 		UserContext userContext = Utils.getUserContext();
 		List <VoucherByMonthDTO> dtoList = new ArrayList<VoucherByMonthDTO>();
 		
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
 		path = path + VOUCHAR_PATH;
 		
 		File parentFolder = new File(path);
@@ -306,7 +306,7 @@ public class ExpensesServiceImpl implements ExpensesService {
 	@Override
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
 		path = path + VOUCHAR_PATH;
 		expensesExcelByMonth (path, folderName);
 		return ZipFileUtils.createZip(userContext, path, folderName, "expense");

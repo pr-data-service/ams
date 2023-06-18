@@ -3,6 +3,9 @@ package com.drps.pdf;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +17,14 @@ import com.drps.ams.entity.PaymentDetailsEntity;
 import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.util.DateUtils;
 import com.drps.ams.util.NumberToWordsConverter;
+import com.drps.ams.util.ParameterVerifier;
+import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
@@ -39,14 +46,16 @@ public class PaymentReceiptPDF {
     private static List<PaymentDetailsEntity> paymentItemList;
     private static Map<String, Object> result;
     private static Map<Long, String> eventListMap;
+    private static String signaturePath;
     
     public PaymentReceiptPDF(String filePath, PaymentEntity entity, List<PaymentDetailsEntity> paymentItemList, 
-    		Map<String, Object> result, Map<Long, String> eventListMap) {
+    		Map<String, Object> result, Map<Long, String> eventListMap, String signaturePath) {
     	this.FILE = filePath;
     	this.entity = entity;
     	this.paymentItemList = paymentItemList;
     	this.result = result;
     	this.eventListMap = eventListMap;
+    	this.signaturePath = signaturePath;
     }
     
     public File getFile() {
@@ -279,7 +288,7 @@ public class PaymentReceiptPDF {
     	cellOne.addElement(addLeftAlignText("Flat No: "+flatNo, normalFont));
     	table.addCell(cellOne);
     	
-    	String mobileNo = (String)result.getOrDefault("mobileNo", "");
+    	String mobileNo = ParameterVerifier.getString(result.getOrDefault("mobileNo", ""));
     	PdfPCell cellTwo = new PdfPCell();
     	cellTwo.setBorder(PdfPCell.TOP);
     	cellTwo.setFixedHeight(14f);
@@ -361,7 +370,7 @@ public class PaymentReceiptPDF {
         addItemHeader(itemTable);
         
         boolean isCanceled = entity.getIsCanceled() != null ? entity.getIsCanceled() : false;
-        int maxRowCount = isCanceled ? 8 : 9;
+        int maxRowCount = isCanceled ? 7 : 8;
         addItemEmptyRow(itemTable, 1);
 //        addItemRow(itemTable, 1, "Maintenance for Jul, 2022 to Oct, 2022(4 Months)", 2000);
 //        addItemRow(itemTable, 2, "Development", 2200);
@@ -387,11 +396,14 @@ public class PaymentReceiptPDF {
         addItemRow(itemTable, "In words Rupees: " + NumberToWordsConverter.convertInWords(entity.getAmount().intValue())+".");
         
         String modeOfPay = entity.getPaymentMode();
-        modeOfPay += "CHEQUE".equalsIgnoreCase(modeOfPay) && entity.getPaymentModeRef() != null ? "-" + entity.getPaymentModeRef() : "";
+        modeOfPay += Arrays.asList("CHEQUE", "ONLINE").contains(modeOfPay) && entity.getPaymentModeRef() != null ? "-" + entity.getPaymentModeRef() : "";
         addItemRow(itemTable, "Mode of payments: " + modeOfPay);
         //addItemRow(itemTable, "Remarks: ");
-        addEmptyRow(itemTable, 1);
-        addItemRowForSignature(itemTable, "Authority Signature");
+        //addEmptyRow(itemTable, 1);
+        
+        
+        addItemRowForSignature(itemTable);
+        addItemRowForSignatureLabel(itemTable, "Authority Signature");
     	cellOne.addElement(itemTable);  
     	
     	
@@ -522,7 +534,7 @@ public class PaymentReceiptPDF {
 		table.addCell(cellOne);
     }
 	
-	private static void addItemRowForSignature(PdfPTable table, String text) {
+	private static void addItemRowForSignatureLabel(PdfPTable table, String text) {
     	
 		PdfPCell cellOne = new PdfPCell();
 		cellOne.setBorder(PdfPCell.NO_BORDER);
@@ -532,6 +544,36 @@ public class PaymentReceiptPDF {
 		cellOne.setColspan(3);
 		cellOne.addElement(addRightAlignText(text, normalFont));
 		table.addCell(cellOne);
+    }
+	
+	private static void addItemRowForSignature(PdfPTable table) {
+    	
+		PdfPCell cellOne = new PdfPCell();
+		cellOne.setBorder(PdfPCell.NO_BORDER);
+		cellOne.setFixedHeight(25f);
+		cellOne.setPaddingTop(0f);
+		cellOne.setPaddingLeft(2f);
+		cellOne.setColspan(3);
+		
+		
+		Paragraph p = new Paragraph();
+		if(signaturePath != null) {
+			Image img=null;
+			try {
+				img = Image.getInstance(signaturePath);
+				p.add(new Chunk(img, 0, 0, true));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		} else {
+			p.add(new Chunk(""));
+		}
+		
+		p.setAlignment(Paragraph.ALIGN_RIGHT);
+        cellOne.addElement(p);
+		table.addCell(cellOne);
+	    
     }
 	
 	private static void addContent(PdfPTable table) throws DocumentException {
