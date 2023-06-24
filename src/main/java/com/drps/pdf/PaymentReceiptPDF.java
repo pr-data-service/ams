@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -557,7 +558,7 @@ public class PaymentReceiptPDF {
 		
 		
 		Paragraph p = new Paragraph();
-		if(signaturePath != null) {
+		if(signaturePath != null && new File(signaturePath).exists()) {
 			Image img=null;
 			try {
 				img = Image.getInstance(signaturePath);

@@ -77,7 +77,7 @@ public class PaymentServiceImpl implements PaymentService {
 	private static final Logger logger = LogManager.getLogger(PaymentServiceImpl.class);
 
 	@Value("${file.storage.path}")
-	String FILE;
+	String storagePath;
 	
 	String PAYMENT_RECEIPT_PATH = "/payment-receipt";
 	
@@ -352,10 +352,10 @@ public class PaymentServiceImpl implements PaymentService {
 				Map<Long, String> eventListMap = eventList.stream().collect(Collectors.toMap(EventsEntity::getId, EventsEntity::getName));
 				
 				
-				String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
+				String path = FileUtils.getApplicationBaseFilePath(userContext, storagePath, true);
 				path = path + PAYMENT_RECEIPT_PATH;
 				String filePath = FileUtils.prepairFilePathForPaymentReceipt(userContext, path, entity, flatDetailsEntity);
-				String sigPath = FileUtils.getSignatureFilePath(userContext, FILE);
+				String sigPath = FileUtils.getSignatureFilePath(userContext, storagePath);
 				
 				PaymentReceiptPDF pdf = new PaymentReceiptPDF(filePath, entity, paymentItemList, result, eventListMap, sigPath);
 				file = pdf.getFile();
@@ -413,7 +413,7 @@ public class PaymentServiceImpl implements PaymentService {
 		UserContext userContext = Utils.getUserContext();
 		List <PaymentSlipByMonthsDTO> dtoList = new ArrayList<PaymentSlipByMonthsDTO>();
 		
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, storagePath, true);
 		path = path + PAYMENT_RECEIPT_PATH;
 		
 		File parentFolder = new File(path);
@@ -433,7 +433,7 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, storagePath, true);
 		path = path + PAYMENT_RECEIPT_PATH;
 		maintenanceExcelByMonth(path, folderName);
 		return ZipFileUtils.createZip(userContext, path, folderName, "payment");

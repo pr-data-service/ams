@@ -284,10 +284,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, false);
 		path = path + SIGNATURE_PATH;
 		
-		String fileName = "signature_" + userContext.getUserId() +".jpg";  			
-		File image = new File(path+"/"+fileName);
+		String fileName = path+"/signature_" + userContext.getUserId();
+		List<File> fileList = List.of(new File(fileName + ".jpg"),new File(fileName + ".jpeg"),	new File(fileName + ".png"));
+		File image = fileList.stream().filter(File::exists).findFirst().orElse(null);
 		
-		if(!image.exists()) {
+		if(image == null || !image.exists()) {
 			throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
 		}
 		try {

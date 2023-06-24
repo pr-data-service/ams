@@ -63,7 +63,7 @@ import lombok.NonNull;
 public class ExpensesServiceImpl implements ExpensesService {
 
 	@Value("${file.storage.path}")
-	String FILE;
+	String storagePath;
 	
 	String VOUCHAR_PATH = "/vouchar";
 	
@@ -229,9 +229,9 @@ public class ExpensesServiceImpl implements ExpensesService {
 			if(entity != null) {
 				List<ExpenseItemsEntity> expenseItemList = expenseItemsRepository.findByExpenseId(userContext.getApartmentId(), userContext.getSessionId(), id);
 				
-				String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
+				String path = FileUtils.getApplicationBaseFilePath(userContext, storagePath, true);
 				path = path + VOUCHAR_PATH;
-				String filePath = FileUtils.prepairFilePathForVouchar(userContext, FILE, entity);
+				String filePath = FileUtils.prepairFilePathForVouchar(userContext, storagePath, entity);
 				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null);
 				file = pdf.getFile();
 			}
@@ -286,7 +286,7 @@ public class ExpensesServiceImpl implements ExpensesService {
 		UserContext userContext = Utils.getUserContext();
 		List <VoucherByMonthDTO> dtoList = new ArrayList<VoucherByMonthDTO>();
 		
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, storagePath, true);
 		path = path + VOUCHAR_PATH;
 		
 		File parentFolder = new File(path);
@@ -306,7 +306,7 @@ public class ExpensesServiceImpl implements ExpensesService {
 	@Override
 	public File downloadZip (String folderName) throws Exception {
 		UserContext userContext = Utils.getUserContext();
-		String path = FileUtils.getApplicationBaseFilePath(userContext, FILE, true);
+		String path = FileUtils.getApplicationBaseFilePath(userContext, storagePath, true);
 		path = path + VOUCHAR_PATH;
 		expensesExcelByMonth (path, folderName);
 		return ZipFileUtils.createZip(userContext, path, folderName, "expense");
