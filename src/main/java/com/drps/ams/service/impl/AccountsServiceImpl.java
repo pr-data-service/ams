@@ -33,7 +33,7 @@ public class AccountsServiceImpl implements AccountsService {
 	public ApiResponseEntity saveOrUpdate(AccountTransactionDTO dto) {
 		UserContext userContext = Utils.getUserContext();
 		dto = saveOrUpdate(dto, userContext.getApartmentId(), userContext.getUserId());
-		return null;
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
 	}
 	
 	@Override
