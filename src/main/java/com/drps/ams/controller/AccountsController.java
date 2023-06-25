@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.drps.ams.dto.AccountTransactionDTO;
 import com.drps.ams.dto.ApiResponseEntity;
+import com.drps.ams.dto.OpeningBalanceDTO;
 import com.drps.ams.service.AccountsService;
 
 @RestController
@@ -42,5 +43,17 @@ public class AccountsController {
 	public ResponseEntity<ApiResponseEntity> deleteById(@PathVariable("id") Long id) throws Exception {
 		logger.info("AMS - AccountsController deleteById");
 		return ResponseEntity.status(HttpStatus.OK).body(accountsService.deleteById(id));		
+	}
+	
+	@PostMapping(value = "/opening-balance/create-or-update")
+	public ResponseEntity<ApiResponseEntity> createOrUpdate(@RequestBody @NonNull OpeningBalanceDTO dto) throws Exception {
+		logger.info("AMS - AccountsController create");
+		return ResponseEntity.status(HttpStatus.OK).body(accountsService.openingBalanceSaveOrUpdate(dto));		
+	}
+	
+	@GetMapping(value = "/opening-balance/get")
+	public ResponseEntity<ApiResponseEntity> getOpeningBalance() throws Exception {
+		logger.info("AMS - AccountsController get");
+		return ResponseEntity.status(HttpStatus.OK).body(accountsService.getOpeningBalance());
 	}
 }

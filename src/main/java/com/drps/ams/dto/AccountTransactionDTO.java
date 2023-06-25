@@ -23,5 +23,6 @@ public class AccountTransactionDTO {
 	private Long sessionId;	
 	private Long apartmentId;
 	private Long createdBy;	
+	@JsonFormat(pattern = "yyyy-MM-dd", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
 	private Date createdDate;
 }

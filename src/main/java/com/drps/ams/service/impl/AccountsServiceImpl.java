@@ -13,10 +13,13 @@ import org.springframework.stereotype.Service;
 import com.drps.ams.bean.UserContext;
 import com.drps.ams.dto.AccountTransactionDTO;
 import com.drps.ams.dto.ApiResponseEntity;
+import com.drps.ams.dto.OpeningBalanceDTO;
 import com.drps.ams.entity.AccountTransactionEntity;
+import com.drps.ams.entity.OpeningBalanceEntity;
 import com.drps.ams.exception.DuplicateRecordException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.repository.AccountTransactionRepository;
+import com.drps.ams.repository.OpeningBalanceRepository;
 import com.drps.ams.service.AccountsService;
 import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.Utils;
@@ -28,6 +31,9 @@ public class AccountsServiceImpl implements AccountsService {
 	
 	@Autowired
 	AccountTransactionRepository accountTransactionRepository;
+	
+	@Autowired
+	OpeningBalanceRepository openingBalanceRepository;
 	
 	@Override
 	public ApiResponseEntity saveOrUpdate(AccountTransactionDTO dto) {
@@ -83,6 +89,37 @@ public class AccountsServiceImpl implements AccountsService {
 		}
 		
 		return list != null && list.size() > 0 ? true : false;
+	}
+	
+	@Override
+	public ApiResponseEntity openingBalanceSaveOrUpdate(OpeningBalanceDTO dto) {
+		UserContext userContext = Utils.getUserContext();
+		
+		OpeningBalanceEntity entity = new OpeningBalanceEntity();
+		if(dto.getId() != null && dto.getId() > 0) {
+			entity = openingBalanceRepository.findById(dto.getId()).orElseThrow();
+			BeanUtils.copyProperties(dto, entity, Utils.getIgnoreEntityPropsOnUpdate(null));
+			entity.setModifiedBy(userContext.getUserDetailsEntity().getId());
+		} else {
+			entity = new OpeningBalanceEntity();
+			BeanUtils.copyProperties(dto, entity);
+			entity.setCreatedBy(userContext.getUserId());
+		}
+		
+		openingBalanceRepository.save(entity);
+		BeanUtils.copyProperties(entity, dto);
+		
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
+	}
+
+	@Override
+	public ApiResponseEntity getOpeningBalance() {
+		UserContext userContext = Utils.getUserContext();
+		OpeningBalanceEntity entity = openingBalanceRepository.get(userContext.getApartmentId(), userContext.getSessionId());
+		OpeningBalanceDTO dto = new OpeningBalanceDTO();
+		BeanUtils.copyProperties(entity, dto);
+		
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
 	}
 
 }
