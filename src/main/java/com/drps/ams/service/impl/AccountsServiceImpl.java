@@ -3,6 +3,7 @@ package com.drps.ams.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
@@ -129,18 +130,25 @@ public class AccountsServiceImpl implements AccountsService {
 		UserContext userContext = Utils.getUserContext();
 		OpeningBalanceEntity entity = openingBalanceRepository.get(userContext.getApartmentId(), userContext.getSessionId());
 		
-		UserDetailsEntity createdBy = userDetailsRepository.findById(entity.getCreatedBy()).orElse(null);
-		UserDetailsEntity modifiedBy = userDetailsRepository.findById(entity.getModifiedBy()).orElse(null);
-		
 		OpeningBalanceDTO dto = new OpeningBalanceDTO();
-		BeanUtils.copyProperties(entity, dto);
-		
-		dto.setCreatedByName(Utils.getUserFullName(createdBy));
-		dto.setModifiedByName(Utils.getUserFullName(modifiedBy));
-		
-		dto.setInBankAccount( ParameterVerifier.getDouble(dto.getInBankAccount()));
-		dto.setCashInHand( ParameterVerifier.getDouble(dto.getCashInHand()));
-		
+		if(entity != null) {
+			UserDetailsEntity createdBy = userDetailsRepository.findById(entity.getCreatedBy()).orElse(null);
+			UserDetailsEntity modifiedBy = userDetailsRepository.findById(entity.getModifiedBy()).orElse(null);
+			
+			BeanUtils.copyProperties(entity, dto);
+			
+			dto.setCreatedByName(Utils.getUserFullName(createdBy));
+			dto.setModifiedByName(Utils.getUserFullName(modifiedBy));
+			
+			dto.setInBankAccount( ParameterVerifier.getDouble(dto.getInBankAccount()));
+			dto.setCashInHand( ParameterVerifier.getDouble(dto.getCashInHand()));
+		} else {
+			dto.setCreatedByName(StringUtils.EMPTY);
+			dto.setModifiedByName(StringUtils.EMPTY);
+			
+			dto.setInBankAccount(Double.valueOf(0));
+			dto.setCashInHand(Double.valueOf(0));
+		}
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
 	}
 	
