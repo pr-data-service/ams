@@ -11,7 +11,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.drps.ams.entity.ExpensesEntity;
-import com.drps.ams.entity.PaymentEntity;
 
 @Repository
 public interface ExpensesRepository extends JpaRepository<ExpensesEntity, Long>, CrudRepository<ExpensesEntity, Long>,JpaSpecificationExecutor<ExpensesEntity> {

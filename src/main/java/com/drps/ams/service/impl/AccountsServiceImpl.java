@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
+import com.drps.ams.bean.ExpenseInfo;
+import com.drps.ams.bean.PaymentInfo;
 import com.drps.ams.bean.UserContext;
 import com.drps.ams.dto.AccountTransactionDTO;
 import com.drps.ams.dto.ApiResponseEntity;
@@ -21,6 +23,8 @@ import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.repository.AccountTransactionRepository;
 import com.drps.ams.repository.OpeningBalanceRepository;
 import com.drps.ams.service.AccountsService;
+import com.drps.ams.service.ExpensesService;
+import com.drps.ams.service.PaymentService;
 import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.Utils;
 
@@ -34,6 +38,12 @@ public class AccountsServiceImpl implements AccountsService {
 	
 	@Autowired
 	OpeningBalanceRepository openingBalanceRepository;
+	
+	@Autowired
+	PaymentService paymentService;
+	
+	@Autowired
+	ExpensesService expensesService;
 	
 	@Override
 	public ApiResponseEntity saveOrUpdate(AccountTransactionDTO dto) {
@@ -120,6 +130,26 @@ public class AccountsServiceImpl implements AccountsService {
 		BeanUtils.copyProperties(entity, dto);
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
+	}
+	
+	@Override
+	public ApiResponseEntity getPaymentInfo() {
+		UserContext userContext = Utils.getUserContext();
+		PaymentInfo paymentInfo = paymentService.getPaymentInfo();
+		if(paymentInfo == null) {
+			paymentInfo = new PaymentInfo();
+		}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, paymentInfo);
+	}
+	
+	@Override
+	public ApiResponseEntity getExpenseInfo() {
+		UserContext userContext = Utils.getUserContext();
+		ExpenseInfo expenseInfo = expensesService.getExpenseInfo();
+		if(expenseInfo == null) {
+			expenseInfo = new ExpenseInfo();
+		}
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, expenseInfo);
 	}
 
 }

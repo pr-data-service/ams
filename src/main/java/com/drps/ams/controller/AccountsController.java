@@ -29,14 +29,14 @@ public class AccountsController {
 	AccountsService accountsService;
 	
 	@GetMapping(value = "/transaction/list/get")
-	public ResponseEntity<ApiResponseEntity> get() throws Exception {
+	public ResponseEntity<ApiResponseEntity> getTransaction() {
 		logger.info("AMS - AccountsController get");
 		return ResponseEntity.status(HttpStatus.OK).body(accountsService.get());		
 	}
 	
 	@PostMapping(value = "/transaction/create")
-	public ResponseEntity<ApiResponseEntity> create(@RequestBody @NonNull AccountTransactionDTO dto) throws Exception {
-		logger.info("AMS - AccountsController create");
+	public ResponseEntity<ApiResponseEntity> createTransaction(@RequestBody @NonNull AccountTransactionDTO dto) throws Exception {
+		logger.info("AMS - AccountsController createTransaction");
 		return ResponseEntity.status(HttpStatus.OK).body(accountsService.saveOrUpdate(dto));		
 	}
 	@DeleteMapping(value = "/transaction/delete/{id}")
@@ -47,13 +47,26 @@ public class AccountsController {
 	
 	@PostMapping(value = "/opening-balance/create-or-update")
 	public ResponseEntity<ApiResponseEntity> createOrUpdate(@RequestBody @NonNull OpeningBalanceDTO dto) throws Exception {
-		logger.info("AMS - AccountsController create");
+		logger.info("AMS - AccountsController createOrUpdate");
 		return ResponseEntity.status(HttpStatus.OK).body(accountsService.openingBalanceSaveOrUpdate(dto));		
 	}
 	
 	@GetMapping(value = "/opening-balance/get")
 	public ResponseEntity<ApiResponseEntity> getOpeningBalance() throws Exception {
-		logger.info("AMS - AccountsController get");
+		logger.info("AMS - AccountsController getOpeningBalance");
 		return ResponseEntity.status(HttpStatus.OK).body(accountsService.getOpeningBalance());
 	}
+	
+	@GetMapping(value = "/payment-info/get")
+	public ResponseEntity<ApiResponseEntity> getPaymentInfo() {
+		logger.info("AMS - AccountsController getPaymentInfo");
+		return ResponseEntity.status(HttpStatus.OK).body(accountsService.getOpeningBalance());
+	}
+	
+	@GetMapping(value = "/expense-info/get")
+	public ResponseEntity<ApiResponseEntity> getExpenseInfo() {
+		logger.info("AMS - AccountsController getExpenseInfo");
+		return ResponseEntity.status(HttpStatus.OK).body(accountsService.getExpenseInfo());
+	}
+	
 }

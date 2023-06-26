@@ -12,12 +12,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.drps.ams.bean.ExpenseInfo;
+import com.drps.ams.bean.PaymentInfo;
 import com.drps.ams.bean.UserContext;
 import com.drps.ams.dbquery.DBQueryExecuter;
 import com.drps.ams.dbquery.QueryMaker;
@@ -62,6 +66,8 @@ import lombok.NonNull;
 @Service
 public class ExpensesServiceImpl implements ExpensesService {
 
+	private static final Logger logger = LogManager.getLogger(ExpensesServiceImpl.class);
+	
 	@Value("${file.storage.path}")
 	String storagePath;
 	
@@ -363,5 +369,22 @@ public class ExpensesServiceImpl implements ExpensesService {
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
+	}
+	
+	@Override
+	public ExpenseInfo getExpenseInfo() {
+		UserContext userContext = Utils.getUserContext();
+		try {
+			List<ExpensesEntity> list = expensesRepository.getAll(userContext.getApartmentId(), userContext.getSessionId());
+			list = list.stream().filter( f -> !f.getIsCanceled()).collect(Collectors.toList());
+			
+			double total = list.stream().map(ExpensesEntity::getAmount).reduce(0.0, Double::sum);
+			
+			return new ExpenseInfo(total);
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

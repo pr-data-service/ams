@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
+import com.drps.ams.bean.PaymentInfo;
 import com.drps.ams.bean.UserContext;
 import com.drps.ams.dbquery.DBQueryExecuter;
 import com.drps.ams.dbquery.QueryMaker;
@@ -495,6 +496,26 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
+	}
+	
+	@Override
+	public PaymentInfo getPaymentInfo() {
+		UserContext userContext = Utils.getUserContext();
+		try {
+			List<PaymentEntity> list = paymentRepository.getAll(userContext.getApartmentId(), userContext.getSessionId());
+			list = list.stream().filter( f -> !f.getIsCanceled()).collect(Collectors.toList());
+			
+			double total = list.stream().map(PaymentEntity::getAmount).reduce(0.0, Double::sum);
+			double cash = list.stream().filter(f -> ApiConstants.PAYMENT_MODE_CASH.equals(f.getPaymentMode())).map(PaymentEntity::getAmount).reduce(0.0, Double::sum);
+			double online = list.stream().filter(f -> ApiConstants.PAYMENT_MODE_ONLINE.equals(f.getPaymentMode())).map(PaymentEntity::getAmount).reduce(0.0, Double::sum);
+			double cheque = list.stream().filter(f -> ApiConstants.PAYMENT_MODE_CHEQUE.equals(f.getPaymentMode())).map(PaymentEntity::getAmount).reduce(0.0, Double::sum);
+			
+			return new PaymentInfo(total, cash, online, cheque);
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
 

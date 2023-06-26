@@ -18,4 +18,8 @@ public interface AccountsService {
 
 	ApiResponseEntity getOpeningBalance();
 
+	ApiResponseEntity getPaymentInfo();
+
+	ApiResponseEntity getExpenseInfo();
+
 }

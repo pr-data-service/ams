@@ -2,10 +2,10 @@ package com.drps.ams.service;
 
 import java.io.File;
 
+import com.drps.ams.bean.PaymentInfo;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.dto.PaymentSaveDTO;
-import org.springframework.core.io.Resource;
 
 public interface PaymentService {
 
@@ -26,5 +26,7 @@ public interface PaymentService {
 	File downloadZip(String folderName) throws Exception;
 
 	ApiResponseEntity getSlipByMonths();
+
+	PaymentInfo getPaymentInfo();
 
 }

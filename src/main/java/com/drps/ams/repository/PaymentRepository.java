@@ -22,6 +22,10 @@ public interface PaymentRepository  extends JpaRepository<PaymentEntity, Long>,
 	@Query("SELECT f FROM PaymentEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
 	List<PaymentEntity> getAll(Long apartmentId, Long sessionId, Pageable pageable);
 	
+	
+	@Query("SELECT f FROM PaymentEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
+	List<PaymentEntity> getAll(Long apartmentId, Long sessionId);
+	
 	@Query("SELECT f FROM PaymentEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId"
 			+ " AND f.paymentDate BETWEEN :startDate AND :endDate")
 	public List<PaymentEntity> getTodaysPaymentList(Long apartmentId, Long sessionId, Date startDate, Date endDate);

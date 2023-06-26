@@ -3,6 +3,7 @@ package com.drps.ams.service;
 import java.io.File;
 import java.util.List;
 
+import com.drps.ams.bean.ExpenseInfo;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.ExpensesDTO;
 import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
@@ -30,5 +31,7 @@ public interface ExpensesService {
 	ApiResponseEntity getVoucherByMonths();
 
 	File downloadZip(String folderName) throws Exception;
+
+	ExpenseInfo getExpenseInfo();
 
 }

@@ -108,4 +108,9 @@ public class ApiConstants {
 
 	public static final String FLAT_TYPE_SINGLE = "SINGLE";
 	public static final String FLAT_TYPE_DOUBLE = "DOUBLE";
+	
+	public static final String PAYMENT_MODE_CASH = "CASH";
+	public static final String PAYMENT_MODE_ONLINE = "ONLINE";
+	public static final String PAYMENT_MODE_CHEQUE = "CHEQUE";
+	
 }
