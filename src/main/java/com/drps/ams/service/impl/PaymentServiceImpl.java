@@ -503,7 +503,7 @@ public class PaymentServiceImpl implements PaymentService {
 		UserContext userContext = Utils.getUserContext();
 		try {
 			List<PaymentEntity> list = paymentRepository.getAll(userContext.getApartmentId(), userContext.getSessionId());
-			list = list.stream().filter( f -> !f.getIsCanceled()).collect(Collectors.toList());
+			list = list.stream().filter( f -> f.getIsCanceled() == null || !f.getIsCanceled()).collect(Collectors.toList());
 			
 			double total = list.stream().map(PaymentEntity::getAmount).reduce(0.0, Double::sum);
 			double cash = list.stream().filter(f -> ApiConstants.PAYMENT_MODE_CASH.equals(f.getPaymentMode())).map(PaymentEntity::getAmount).reduce(0.0, Double::sum);

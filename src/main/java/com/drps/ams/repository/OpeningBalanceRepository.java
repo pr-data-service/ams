@@ -13,6 +13,6 @@ import com.drps.ams.entity.OpeningBalanceEntity;
 public interface OpeningBalanceRepository extends JpaRepository<OpeningBalanceEntity, Long>,
 		CrudRepository<OpeningBalanceEntity, Long>, JpaSpecificationExecutor<OpeningBalanceEntity> {
 
-	@Query("SELECT f FROM AccountTransactionEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
+	@Query("SELECT f FROM OpeningBalanceEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
 	OpeningBalanceEntity get(Long apartmentId, Long sessionId);
 }

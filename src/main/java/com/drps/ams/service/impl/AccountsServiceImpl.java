@@ -18,14 +18,17 @@ import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.OpeningBalanceDTO;
 import com.drps.ams.entity.AccountTransactionEntity;
 import com.drps.ams.entity.OpeningBalanceEntity;
+import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.DuplicateRecordException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.repository.AccountTransactionRepository;
 import com.drps.ams.repository.OpeningBalanceRepository;
+import com.drps.ams.repository.UserDetailsRepository;
 import com.drps.ams.service.AccountsService;
 import com.drps.ams.service.ExpensesService;
 import com.drps.ams.service.PaymentService;
 import com.drps.ams.util.ApiConstants;
+import com.drps.ams.util.ParameterVerifier;
 import com.drps.ams.util.Utils;
 
 @Service
@@ -45,31 +48,28 @@ public class AccountsServiceImpl implements AccountsService {
 	@Autowired
 	ExpensesService expensesService;
 	
+	@Autowired
+	UserDetailsRepository userDetailsRepository;
+	
 	@Override
 	public ApiResponseEntity saveOrUpdate(AccountTransactionDTO dto) {
 		UserContext userContext = Utils.getUserContext();
-		dto = saveOrUpdate(dto, userContext.getApartmentId(), userContext.getUserId());
-		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
-	}
-	
-	@Override
-	public AccountTransactionDTO saveOrUpdate(@NonNull AccountTransactionDTO dto, Long apartmentId, Long userId) {
 		
-		if(isDuplicateRecord(dto, apartmentId)) {
+		if(isDuplicateRecord(dto, userContext.getApartmentId())) {
 			throw new DuplicateRecordException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_DUPLICATE_RECORD_EXCEPTION));
 		} 
 		
 		AccountTransactionEntity entity = new AccountTransactionEntity();
 		BeanUtils.copyProperties(dto, entity);
-		entity.setApartmentId(apartmentId);
-		entity.setCreatedBy(userId);
+		entity.setApartmentId(userContext.getApartmentId());
+		entity.setSessionId(userContext.getSessionId());
+		entity.setCreatedBy(userContext.getUserId());
 		accountTransactionRepository.save(entity);
 		
 		BeanUtils.copyProperties(entity, dto);	
-		
-		return dto;
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
 	}
-
+	
 	@Override
 	public ApiResponseEntity get() {
 		UserContext userContext = Utils.getUserContext();
@@ -114,6 +114,8 @@ public class AccountsServiceImpl implements AccountsService {
 			entity = new OpeningBalanceEntity();
 			BeanUtils.copyProperties(dto, entity);
 			entity.setCreatedBy(userContext.getUserId());
+			entity.setApartmentId(userContext.getApartmentId());
+			entity.setSessionId(userContext.getSessionId());
 		}
 		
 		openingBalanceRepository.save(entity);
@@ -126,8 +128,18 @@ public class AccountsServiceImpl implements AccountsService {
 	public ApiResponseEntity getOpeningBalance() {
 		UserContext userContext = Utils.getUserContext();
 		OpeningBalanceEntity entity = openingBalanceRepository.get(userContext.getApartmentId(), userContext.getSessionId());
+		
+		UserDetailsEntity createdBy = userDetailsRepository.findById(entity.getCreatedBy()).orElse(null);
+		UserDetailsEntity modifiedBy = userDetailsRepository.findById(entity.getModifiedBy()).orElse(null);
+		
 		OpeningBalanceDTO dto = new OpeningBalanceDTO();
 		BeanUtils.copyProperties(entity, dto);
+		
+		dto.setCreatedByName(Utils.getUserFullName(createdBy));
+		dto.setModifiedByName(Utils.getUserFullName(modifiedBy));
+		
+		dto.setInBankAccount( ParameterVerifier.getDouble(dto.getInBankAccount()));
+		dto.setCashInHand( ParameterVerifier.getDouble(dto.getCashInHand()));
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
 	}

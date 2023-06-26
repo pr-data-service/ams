@@ -60,7 +60,7 @@ public class AccountsController {
 	@GetMapping(value = "/payment-info/get")
 	public ResponseEntity<ApiResponseEntity> getPaymentInfo() {
 		logger.info("AMS - AccountsController getPaymentInfo");
-		return ResponseEntity.status(HttpStatus.OK).body(accountsService.getOpeningBalance());
+		return ResponseEntity.status(HttpStatus.OK).body(accountsService.getPaymentInfo());
 	}
 	
 	@GetMapping(value = "/expense-info/get")

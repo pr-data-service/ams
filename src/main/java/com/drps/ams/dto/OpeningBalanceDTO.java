@@ -30,12 +30,16 @@ public class OpeningBalanceDTO {
 	
 	private Long apartmentId;	
 	
-	private Long createdBy;	
+	private Long createdBy;
+	
+	private String createdByName;
 	
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
 	private Date createdDate;
 	
 	private Long modifiedBy;	
+	
+	private String modifiedByName;
 	
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
 	private Date modifiedDate;

@@ -65,6 +65,18 @@ public class ParameterVerifier {
 		return no;
 	}
 	
+	public static double getDouble(Object arg) {
+		double no = 0.0;
+		try {
+			if(isValidParam(arg)) {
+				no = Double.valueOf(String.valueOf(arg));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return no;
+	}
+	
 	public static boolean isBoolean(Object value) {
 	    return value != null && Arrays.stream(new String[]{"true", "false", "1", "0"})
 	            .anyMatch(b -> b.equalsIgnoreCase(String.valueOf(value)));

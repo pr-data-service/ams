@@ -18,6 +18,7 @@ public class AccountTransactionDTO {
 	private String type;
 	private String refNo;
 	private Double amount;
+	private String remarks;
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
 	private Date transDate;
 	private Long sessionId;	

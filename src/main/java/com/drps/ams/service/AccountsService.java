@@ -12,8 +12,6 @@ public interface AccountsService {
 
 	ApiResponseEntity deleteById(Long id);
 
-	AccountTransactionDTO saveOrUpdate(AccountTransactionDTO dto, Long apartmentId, Long userId);
-
 	ApiResponseEntity openingBalanceSaveOrUpdate(OpeningBalanceDTO dto);
 
 	ApiResponseEntity getOpeningBalance();

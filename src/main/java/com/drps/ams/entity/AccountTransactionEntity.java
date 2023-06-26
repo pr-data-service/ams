@@ -40,6 +40,9 @@ public class AccountTransactionEntity {
 	@Column(name = "AMOUNT")
 	private Double amount;
 	
+	@Column(name = "REMARKS")
+	private String remarks;
+	
 	@Column(name = "TRANS_DATE")
 	private Date transDate;
 	
