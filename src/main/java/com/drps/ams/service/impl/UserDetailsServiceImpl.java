@@ -32,7 +32,9 @@ import com.drps.ams.dto.ExpenseItemsDTO;
 import com.drps.ams.dto.RequestParamDTO;
 import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.dto.UserPasswordDTO;
+import com.drps.ams.dto.UserRolePermissionDTO;
 import com.drps.ams.entity.UserDetailsEntity;
+import com.drps.ams.entity.UserRolePermissionEntity;
 import com.drps.ams.exception.DuplicateRecordException;
 import com.drps.ams.exception.InvalidConfirmPassword;
 import com.drps.ams.exception.InvalidCredentialsException;
@@ -40,7 +42,9 @@ import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.repository.LinkFlatDetailsAndUserDetailsRepository;
 import com.drps.ams.repository.UserDetailsRepository;
+import com.drps.ams.repository.UserRolePermissionRepository;
 import com.drps.ams.service.UserDetailsService;
+import com.drps.ams.service.UserRolePermissionService;
 import com.drps.ams.util.ApiConstants;
 import com.drps.ams.util.FileUtils;
 import com.drps.ams.util.Utils;
@@ -48,7 +52,7 @@ import com.drps.ams.util.Utils;
 import lombok.NonNull;
 
 @Service
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermissionService {
 	
 	@Value("${file.storage.path}")
 	String FILE;
@@ -66,6 +70,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	
 	@Autowired
 	FlatDetailsCacheService flatDetailsCacheService;
+	
+	@Autowired
+	UserRolePermissionRepository userRolePermissionRepository;
 
 	@Override
 	public ApiResponseEntity saveOrUpdate(@NonNull UserDetailsDTO userDetailsDTO) throws Exception {
@@ -296,5 +303,53 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public ApiResponseEntity saveOrUpdateUserRolePermission(@NonNull UserRolePermissionDTO dto) {
+		UserContext userContext = Utils.getUserContext();
+		
+		UserRolePermissionEntity entity = null;
+		if(dto.getId() != null && dto.getId() > 0) {
+			entity = userRolePermissionRepository.findById(dto.getId()).orElse(null);
+			
+			BeanUtils.copyProperties(dto, entity, Utils.getIgnoreEntityPropsOnUpdate(null));
+			entity.setModifiedBy(userContext.getUserId());
+		} else {
+			entity = new UserRolePermissionEntity();
+			BeanUtils.copyProperties(dto, entity);
+			entity.setCreatedBy(userContext.getUserId());
+			entity.setModifiedBy(userContext.getUserId());
+			entity.setApartmentId(userContext.getApartmentId());
+		}
+		userRolePermissionRepository.save(entity);
+		
+		BeanUtils.copyProperties(entity, dto);
+		
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
+	}
+
+	@Override
+	public ApiResponseEntity getUserRolePermission() {
+		UserContext userContext = Utils.getUserContext();
+		
+		List<UserRolePermissionEntity> list = userRolePermissionRepository.getAll(userContext.getApartmentId());
+		List<UserRolePermissionDTO> rtnList = Utils.convertList(list, UserRolePermissionDTO.class);
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
+	}
+
+	@Override
+	public ApiResponseEntity getUserRolePermission(String object, String role) {
+		UserContext userContext = Utils.getUserContext();
+		
+		UserRolePermissionEntity entity = userRolePermissionRepository.get(userContext.getApartmentId(), object, role);
+		if(entity == null) {
+			throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+		}
+		
+		UserRolePermissionDTO dto = new UserRolePermissionDTO();
+		BeanUtils.copyProperties(entity, dto);
+		
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
 	}
 }

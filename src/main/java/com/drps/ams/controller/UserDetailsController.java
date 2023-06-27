@@ -25,7 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.dto.UserPasswordDTO;
+import com.drps.ams.dto.UserRolePermissionDTO;
 import com.drps.ams.service.UserDetailsService;
+import com.drps.ams.service.UserRolePermissionService;
 
 
 @RestController
@@ -36,6 +38,9 @@ public class UserDetailsController {
 	
 	@Autowired
 	UserDetailsService userDetailsService;	
+	
+	@Autowired
+	UserRolePermissionService userRolePermissionService;
 	
 	@PostMapping(value = "/create_or_update")
 	public ResponseEntity<ApiResponseEntity> createOrUpdate(@RequestBody UserDetailsDTO userDetailsDTO) throws Exception {
@@ -103,5 +108,23 @@ public class UserDetailsController {
 		logger.info("AMS - UserDetailsController getSignature");
 		
 		userDetailsService.getSignature(req, res);
+	}
+	
+	@PostMapping(value = "/user-role-permission/create_or_update")
+	public ResponseEntity<ApiResponseEntity> createOrUpdateUserRolePermission(@RequestBody UserRolePermissionDTO dto) throws Exception {
+		logger.info("AMS - UserDetailsController createOrUpdateUserRolePermission: {}", dto);
+		return ResponseEntity.status(HttpStatus.OK).body(userRolePermissionService.saveOrUpdateUserRolePermission(dto));		
+	}
+	
+	@GetMapping(value = "/user-role-permission/get")
+	public ResponseEntity<ApiResponseEntity> getUserRolePermission() {
+		logger.info("AMS - UserDetailsController getUserRolePermission");
+		return ResponseEntity.status(HttpStatus.OK).body(userRolePermissionService.getUserRolePermission());		
+	}
+	
+	@GetMapping(value = "/user-role-permission/get/{object}/{role}")
+	public ResponseEntity<ApiResponseEntity> getUserRolePermission(@PathVariable String object, @PathVariable String role) {
+		logger.info("AMS - UserDetailsController getUserRolePermission");
+		return ResponseEntity.status(HttpStatus.OK).body(userRolePermissionService.getUserRolePermission(object, role));		
 	}
 }
