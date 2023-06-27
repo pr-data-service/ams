@@ -1,15 +1,8 @@
 package com.drps.ams.dto;
 
-import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import com.drps.ams.annotation.EntityMapping;
-import com.drps.ams.entity.MaintenanceEntity;
 import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.util.DateUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -30,6 +23,10 @@ import lombok.ToString;
 public class UserDetailsDTO {
 
 	private Long id;	
+	
+	private String type;
+	
+	private String role;
 	
 	private String loginId;	
 	

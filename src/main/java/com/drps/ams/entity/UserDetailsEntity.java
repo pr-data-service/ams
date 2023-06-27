@@ -35,6 +35,12 @@ public class UserDetailsEntity {
 	@Column(name = "ID")
 	private Long id;	
 	
+	@Column(name = "TYPE")
+	private String type;
+	
+	@Column(name = "ROLE")
+	private String role;
+	
 	@Column(name = "LOGIN_ID")
 	private String loginId;	
 	

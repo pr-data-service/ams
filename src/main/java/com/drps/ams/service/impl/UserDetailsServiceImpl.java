@@ -33,6 +33,7 @@ import com.drps.ams.dto.RequestParamDTO;
 import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.dto.UserPasswordDTO;
 import com.drps.ams.dto.UserRolePermissionDTO;
+import com.drps.ams.dto.UserRoleUpdateDTO;
 import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.entity.UserRolePermissionEntity;
 import com.drps.ams.exception.DuplicateRecordException;
@@ -87,7 +88,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 		UserDetailsEntity userDetailsEntity = null;
 		if(userDetailsDTO.getId() != null && userDetailsDTO.getId() > 0) {
 			userDetailsEntity = userDetailsRepository.findById(userDetailsDTO.getId()).get();
-			BeanUtils.copyProperties(userDetailsDTO, userDetailsEntity, Utils.getIgnoreEntityPropsOnUpdate(null));
+			BeanUtils.copyProperties(userDetailsDTO, userDetailsEntity, Utils.getIgnoreEntityPropsOnUpdate(new String[] {"type", "role", "password"}));
 			userDetailsEntity.setModifiedBy(userContext.getUserDetailsEntity().getId());
 		} else {
 			userDetailsEntity = new UserDetailsEntity();
@@ -100,7 +101,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 			
 		userDetailsRepository.save(userDetailsEntity);
 		//Removing cache
-		flatDetailsCacheService.removeCacheByApartmentId(userContext.getApartmentId());	
+		flatDetailsCacheService.removeCacheByApartmentId(userContext.getApartmentId());
 		
 		BeanUtils.copyProperties(userDetailsEntity, userDetailsDTO);	
 		
@@ -351,5 +352,38 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 		BeanUtils.copyProperties(entity, dto);
 		
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, dto);
+	}
+	
+	@Override
+	public ApiResponseEntity getOnlyUserList() {
+		UserContext userContext = Utils.getUserContext();
+		
+		List<UserDetailsEntity> list = userDetailsRepository.getUserList(userContext.getApartmentId());
+		List<UserDetailsDTO> rtnList = Utils.convertList(list, UserDetailsDTO.class);
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
+	}
+	
+	@Override
+	public ApiResponseEntity updateOnlyUserRole (@NonNull UserRoleUpdateDTO dto) {
+		UserContext userContext = Utils.getUserContext();
+		
+		if(dto.getId() != null && dto.getId() > 0) {
+			userDetailsRepository.updateUserRole(dto.getRole(), dto.getId()); 
+			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, null);
+		} else {
+			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
+		}
+	}
+	
+	@Override
+	public ApiResponseEntity removeUserRole (@NonNull Long id) {
+		UserContext userContext = Utils.getUserContext();
+		
+		if(id != null && id > 0) {
+			userDetailsRepository.removeUserRole(id); 
+			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, null);
+		} else {
+			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
+		}
 	}
 }

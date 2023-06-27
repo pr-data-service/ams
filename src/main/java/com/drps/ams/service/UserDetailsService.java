@@ -10,6 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.dto.UserPasswordDTO;
+import com.drps.ams.dto.UserRoleUpdateDTO;
+
+import lombok.NonNull;
 
 public interface UserDetailsService {
 
@@ -25,4 +28,7 @@ public interface UserDetailsService {
 	ApiResponseEntity updatePassword(UserPasswordDTO userPasswordDto) throws Exception;
 	public ApiResponseEntity uploadSignature(MultipartFile file) throws Exception;
 	void getSignature(HttpServletRequest req, HttpServletResponse res);
+	ApiResponseEntity getOnlyUserList();
+	ApiResponseEntity updateOnlyUserRole(UserRoleUpdateDTO dto);
+	ApiResponseEntity removeUserRole(@NonNull Long id);
 }

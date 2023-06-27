@@ -26,6 +26,7 @@ import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.dto.UserPasswordDTO;
 import com.drps.ams.dto.UserRolePermissionDTO;
+import com.drps.ams.dto.UserRoleUpdateDTO;
 import com.drps.ams.service.UserDetailsService;
 import com.drps.ams.service.UserRolePermissionService;
 
@@ -126,5 +127,23 @@ public class UserDetailsController {
 	public ResponseEntity<ApiResponseEntity> getUserRolePermission(@PathVariable String object, @PathVariable String role) {
 		logger.info("AMS - UserDetailsController getUserRolePermission");
 		return ResponseEntity.status(HttpStatus.OK).body(userRolePermissionService.getUserRolePermission(object, role));		
+	}
+	
+	@GetMapping(value = "/list/only-user")
+	public ResponseEntity<ApiResponseEntity> getOnlyUserList() throws Exception {
+		logger.info("AMS - UserDetailsController getOnlyUserList");
+		return ResponseEntity.status(HttpStatus.OK).body(userDetailsService.getOnlyUserList());		
+	}
+	
+	@PostMapping(value = "/update/only-user-role")
+	public ResponseEntity<ApiResponseEntity> updateOnlyUserRole(@RequestBody UserRoleUpdateDTO dto) throws Exception {
+		logger.info("AMS - UserDetailsController updateOnlyUserRole");
+		return ResponseEntity.status(HttpStatus.OK).body(userDetailsService.updateOnlyUserRole(dto));		
+	}
+	
+	@PostMapping(value = "/remove/user-role/{userId}")
+	public ResponseEntity<ApiResponseEntity> removeUserRole(@PathVariable Long userId ) throws Exception {
+		logger.info("AMS - UserDetailsController removeUserRole");
+		return ResponseEntity.status(HttpStatus.OK).body(userDetailsService.removeUserRole(userId));		
 	}
 }
