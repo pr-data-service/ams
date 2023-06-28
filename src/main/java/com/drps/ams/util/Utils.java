@@ -31,6 +31,7 @@ import com.drps.ams.dto.PaymentDetailsDTO;
 import com.drps.ams.entity.PaymentDetailsEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
 import com.drps.ams.entity.UserDetailsEntity;
+import com.drps.ams.entity.UserRolePermissionEntity;
 import com.drps.ams.exception.UserContextNotFoundException;
 
 public class Utils {
@@ -299,4 +300,26 @@ public class Utils {
 		return sessionDetails;
     }
     
+    
+    public static List<String> getPermissionList(UserRolePermissionEntity entity) {
+    	List<String> list = new ArrayList<>();
+    	if(entity.getCreate() != null && entity.getCreate()) {
+    		list.add(ApiConstants.USER_PERMISSION_CREATE);
+    	}
+    	
+    	if(entity.getView() != null && entity.getView()) {
+    		list.add(ApiConstants.USER_PERMISSION_VIEW);
+    	}
+    	
+    	if(entity.getEdit() != null && entity.getEdit()) {
+    		list.add(ApiConstants.USER_PERMISSION_EDIT);
+    	}
+    	
+    	if(entity.getDelete() != null && entity.getDelete()) {
+    		list.add(ApiConstants.USER_PERMISSION_DELETE);
+    	}
+    	
+    	
+    	return list;
+    }
 }

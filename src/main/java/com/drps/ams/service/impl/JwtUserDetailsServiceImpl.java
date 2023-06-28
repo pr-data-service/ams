@@ -17,6 +17,7 @@ import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.repository.ApartmentDetailsRepository;
 import com.drps.ams.repository.SessionDetailsRepository;
 import com.drps.ams.repository.UserDetailsRepository;
+import com.drps.ams.util.ApiConstants;
 
 
 @Service
@@ -44,11 +45,16 @@ public class JwtUserDetailsServiceImpl implements UserDetailsService {
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
 			
 			
+			UserContext userContext = null;
+			if(ApiConstants.USER_ROLE_SADMIN.equals(user.getRole())) {
+				userContext = new UserContext(user, new ArrayList<>());
+			} else {
+				userContext = new UserContext(
+						apartmentDetailsRepository.findById(user.getApartmentId()).get(),
+						user, 
+						new ArrayList<>());
+			}
 			
-			UserContext userContext = new UserContext(
-					apartmentDetailsRepository.findById(user.getApartmentId()).get(),
-					user, 
-					new ArrayList<>());
 			return userContext;
 			
 //			return new User("javainuse", 

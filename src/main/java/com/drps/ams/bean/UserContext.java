@@ -48,6 +48,21 @@ public class UserContext extends User {
 		this.userId = userDetailsEntity.getId();
 	}
 	
+	public UserContext(UserDetailsEntity userDetailsEntity, 
+			Collection<? extends GrantedAuthority> authorities) {
+		super(userDetailsEntity.getContactNo1(), userDetailsEntity.getPassword(), authorities);
+		this.userDetailsEntity = userDetailsEntity;
+		
+		this.userId = userDetailsEntity.getId();
+	}
+	
+	public void setApartmentDetailsEntity(ApartmentDetailsEntity apartmentDetailsEntity) {
+		if(apartmentDetailsEntity != null) {
+			this.apartmentDetailsEntity = apartmentDetailsEntity;
+			this.apartmentId = apartmentDetailsEntity.getId();
+		}
+	}
+	
 	public Long getSessionId() {
 		if(sessionDetailsEntity != null) {
 			return sessionDetailsEntity.getId();

@@ -133,7 +133,10 @@ public class CommonServiceImpl implements CommonService {
 		UserContext userContext = Utils.getUserContext();
 		try {
 			if(list != null) {
-				String systemUserName = ApiConstants.getSystemUserName(ApiConstants.SYSTEM_USER_ID);
+				Map<Long, String> userMap = new HashMap<>();
+				userMap.put(ApiConstants.SYSTEM_USER_ID, ApiConstants.getSystemUserName(ApiConstants.SYSTEM_USER_ID));
+				UserDetailsEntity sAdminEntity = userDetailsRepository.findSAdmin();
+				userMap.put(ApiConstants.getSAdminUserId(sAdminEntity), ApiConstants.getSAdminUserName(sAdminEntity));
 				
 				List<UserDetailsEntity> userDetailsList = userDetailsRepository.getAll(userContext.getApartmentId());		
 				Map<Long, UserDetailsEntity> flatListMap = userDetailsList.stream().collect(Collectors.toMap( x -> x.getId(), x -> x));
@@ -150,8 +153,8 @@ public class CommonServiceImpl implements CommonService {
 						Long modifiedBy = (Long)fldModifiedBy.get(t);
 						fldModifiedBy.setAccessible(false);
 						
-						String createdByName = ApiConstants.SYSTEM_USER_ID == createdBy ? systemUserName : Utils.getUserFullName(flatListMap.get(createdBy));
-						String modifiedByName = ApiConstants.SYSTEM_USER_ID == modifiedBy ? systemUserName : Utils.getUserFullName(flatListMap.get(modifiedBy));
+						String createdByName = userMap.keySet().contains(createdBy) ? userMap.get(createdBy) : Utils.getUserFullName(flatListMap.get(createdBy));
+						String modifiedByName = userMap.keySet().contains(modifiedBy) ? userMap.get(modifiedBy) : Utils.getUserFullName(flatListMap.get(modifiedBy));
 						
 						cls.getField("createdByName").set(t, createdByName);
 						cls.getField("modifiedByName").set(t, modifiedByName);

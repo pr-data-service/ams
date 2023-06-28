@@ -8,9 +8,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -74,6 +78,27 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 	
 	@Autowired
 	UserRolePermissionRepository userRolePermissionRepository;
+	
+	@PostConstruct
+	public void init(){
+		createSAdminUser();
+	}
+	
+	private void createSAdminUser() {
+		UserDetailsEntity userDetailsEntity = userDetailsRepository.findSAdmin();
+		if(Objects.isNull(userDetailsEntity)) {
+			userDetailsEntity = new UserDetailsEntity();
+			userDetailsEntity.setType(ApiConstants.USER_TYPE_USER);
+			userDetailsEntity.setRole(ApiConstants.USER_ROLE_SADMIN);
+			userDetailsEntity.setFirstName(ApiConstants.SADMIN_USER_NAME);
+			userDetailsEntity.setContactNo1("1111111111");
+			userDetailsEntity.setPassword("pass");
+			userDetailsEntity.setApartmentId(Long.valueOf(0));
+			userDetailsEntity.setIsActive(true);
+			userDetailsEntity.setCreatedBy(ApiConstants.SYSTEM_USER_ID);
+			userDetailsRepository.save(userDetailsEntity);
+		}
+	}
 
 	@Override
 	public ApiResponseEntity saveOrUpdate(@NonNull UserDetailsDTO userDetailsDTO) throws Exception {
@@ -385,5 +410,12 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 		} else {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
 		}
+	}
+	
+	@Override
+	public Map<String, List<String>> getUserPermissions(Long apartmentId, String role) {
+		
+		List<UserRolePermissionEntity> list = userRolePermissionRepository.findByRole(apartmentId, role);
+		return list.stream().collect(Collectors.toMap(UserRolePermissionEntity::getObject, Utils::getPermissionList));
 	}
 }

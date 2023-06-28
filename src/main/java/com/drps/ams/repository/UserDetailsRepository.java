@@ -33,5 +33,6 @@ public interface UserDetailsRepository extends JpaRepository<UserDetailsEntity, 
 	@Query("UPDATE UserDetailsEntity U SET U.type = 'OWNER', U.role = NULL WHERE U.id = :id")
 	void removeUserRole (Long id);
 	
-
+	@Query("SELECT f FROM UserDetailsEntity f WHERE f.type = 'USER' AND f.role = 'SADMIN'")
+	UserDetailsEntity findSAdmin();
 }

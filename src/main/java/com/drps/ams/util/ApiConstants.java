@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.drps.ams.bean.UserContext;
 import com.drps.ams.entity.LinkFlatDetailsAndUserDetailsEntity;
+import com.drps.ams.entity.UserDetailsEntity;
 
 public class ApiConstants {
 	
@@ -94,6 +96,22 @@ public class ApiConstants {
 		return id == SYSTEM_USER_ID ? SYSTEM_USER_NAME : "";
 	}
 	
+	public static Long getSAdminUserId(UserDetailsEntity userDetailsEntity) {
+		if(userDetailsEntity != null && USER_ROLE_SADMIN.equals(userDetailsEntity.getRole())) {
+			return userDetailsEntity.getId();
+		} else {
+			throw new RuntimeException("Invalid SAdmin.");
+		}
+	}
+	
+	public static String getSAdminUserName(UserDetailsEntity userDetailsEntity) {
+		if(userDetailsEntity != null && USER_ROLE_SADMIN.equals(userDetailsEntity.getRole())) {
+			return userDetailsEntity.getFirstName();
+		} else {
+			throw new RuntimeException("Invalid SAdmin.");
+		}
+	}
+	
 	public static final List<String> DEFAULT_FIELDS_NOT_TO_MODIFY_ON_UPDATE = Arrays.asList(new String[] {"sessionId", "apartmentId", "isDeleted", "isActive", "createdBy", "createdDate", "modifiedBy", "modifiedDate"});
 	
 	
@@ -112,5 +130,17 @@ public class ApiConstants {
 	public static final String PAYMENT_MODE_CASH = "CASH";
 	public static final String PAYMENT_MODE_ONLINE = "ONLINE";
 	public static final String PAYMENT_MODE_CHEQUE = "CHEQUE";
+	
+	public static final String SADMIN_USER_NAME = "Super Admin";
+	
+	public static final String USER_ROLE_SADMIN = "SADMIN";
+	
+	public static final String USER_TYPE_OWNER = "OWNER";
+	public static final String USER_TYPE_USER = "USER";
+	
+	public static final String USER_PERMISSION_CREATE = "CREATE";
+	public static final String USER_PERMISSION_VIEW = "VIEW";
+	public static final String USER_PERMISSION_EDIT = "EDIT";
+	public static final String USER_PERMISSION_DELETE = "DELETE";
 	
 }

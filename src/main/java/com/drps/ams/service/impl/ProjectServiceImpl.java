@@ -121,7 +121,14 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 	
 	@Override
-	public List<SessionDetailsDTO> getSessionList(String username) {
+	public List<ApartmentDetailsDTO> getApartmentList() {
+		
+		List<ApartmentDetailsEntity> list = apartmentDetailsRepository.findAll();
+		return Utils.convertList(list, ApartmentDetailsDTO.class);
+	}
+	
+	@Override
+	public ApiResponseEntity getSessionListByUsername(String username) {
 				
 		UserContext userContext = null;
 		if(username != null) {
@@ -132,7 +139,20 @@ public class ProjectServiceImpl implements ProjectService {
 			throw new UserContextNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_USER_CONTEXT_NOT_FOUND_EXCEPTION));
 		}
 		
-		List<SessionDetailsEntity> list = sessionDetailsRepository.findByApartmentId(userContext.getApartmentId());
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, getSessionList(userContext.getApartmentId()));
+	}
+	
+	@Override
+	public ApiResponseEntity getSessionListByApartmentId(Long apartmentId) {
+				
+		UserContext userContext = Utils.getUserContext();
+		
+		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, getSessionList(apartmentId));
+	}
+	
+	@Override
+	public List<SessionDetailsDTO> getSessionList(Long apartmentId) {
+		List<SessionDetailsEntity> list = sessionDetailsRepository.findByApartmentId(apartmentId);
 
 		List<SessionDetailsDTO> rtnList = new ArrayList<>();
 		if (list != null) {

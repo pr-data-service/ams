@@ -1,6 +1,7 @@
 package com.drps.ams.service;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,4 +32,5 @@ public interface UserDetailsService {
 	ApiResponseEntity getOnlyUserList();
 	ApiResponseEntity updateOnlyUserRole(UserRoleUpdateDTO dto);
 	ApiResponseEntity removeUserRole(@NonNull Long id);
+	Map<String, List<String>> getUserPermissions(Long apartmentId, String role);
 }

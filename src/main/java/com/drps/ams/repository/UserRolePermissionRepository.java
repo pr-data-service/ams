@@ -22,5 +22,8 @@ public interface UserRolePermissionRepository extends JpaRepository<UserRolePerm
 	@Query("SELECT f FROM UserRolePermissionEntity f WHERE f.apartmentId = :apartmentId AND f.object = :object"
 			+ " AND f.role = :role")
 	UserRolePermissionEntity get(Long apartmentId, String object, String role);
+	
+	@Query("SELECT f FROM UserRolePermissionEntity f WHERE f.apartmentId = :apartmentId AND f.role = :role")
+	List<UserRolePermissionEntity> findByRole(Long apartmentId, String role);
 
 }
