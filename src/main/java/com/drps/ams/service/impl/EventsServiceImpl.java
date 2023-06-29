@@ -1,6 +1,5 @@
 package com.drps.ams.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,24 +16,15 @@ import com.drps.ams.dbquery.DBQueryExecuter;
 import com.drps.ams.dbquery.QueryMaker;
 import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.EventsDTO;
-import com.drps.ams.dto.ExpenseItemsDTO;
-import com.drps.ams.dto.ExpensesDTO;
-import com.drps.ams.dto.FlatDetailsDTO;
-import com.drps.ams.dto.PaymentDetailsDTO;
 import com.drps.ams.dto.RequestParamDTO;
-import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.entity.EventsEntity;
-import com.drps.ams.entity.ExpenseItemsEntity;
 import com.drps.ams.entity.ExpensesEntity;
-import com.drps.ams.entity.MaintenanceMasterEntity;
-import com.drps.ams.entity.SessionDetailsEntity;
-import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.DuplicateRecordException;
 import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
-import com.drps.ams.exception.UserContextNotFoundException;
 import com.drps.ams.repository.EventsRepository;
 import com.drps.ams.repository.ExpensesRepository;
+import com.drps.ams.repository.PaymentDetailsRepository;
 import com.drps.ams.service.CommonService;
 import com.drps.ams.service.EventsService;
 import com.drps.ams.util.Utils;
@@ -60,6 +50,9 @@ public class EventsServiceImpl implements EventsService {
 	
 	@Autowired
 	DBQueryExecuter dbQueryExecuter;
+	
+	@Autowired
+	PaymentDetailsRepository paymentDetailsRepository;
 	
 	@Override
 	public ApiResponseEntity saveOrUpdate(@NonNull EventsDTO eventsDTO) throws Exception {
@@ -173,13 +166,22 @@ public class EventsServiceImpl implements EventsService {
 		}
 	}
 	
+	public boolean isEventUsed (Long eventId) {
+		
+		boolean isExistInPaymentDetails = paymentDetailsRepository.isEventExist(eventId);
+		boolean isExistInExpenseItems = expensesRepository.isEventExist(eventId);
+		return (isExistInExpenseItems || isExistInPaymentDetails);
+	}
+	
+	
 	@Override
 	public ApiResponseEntity deleteAllById(List<Long> ids) throws Exception {
 		UserContext userContext = Utils.getUserContext();
 		
 		if(ids != null && ids.size() > 0) {
+			ids = ids.stream().filter( f -> !isEventUsed(f)).collect(Collectors.toList());
 			eventsRepository.deleteAllById(ids);
-			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS));
+			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_SUCCESS),ids);
 		} else {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
 		}

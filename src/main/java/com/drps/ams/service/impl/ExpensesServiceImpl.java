@@ -40,6 +40,7 @@ import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.PaymentDetailsEntity;
 import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
+import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.FileStorageException;
 import com.drps.ams.exception.NoRecordFoundException;
 import com.drps.ams.exception.RecordIdNotFoundException;
@@ -47,9 +48,11 @@ import com.drps.ams.exception.UserContextNotFoundException;
 import com.drps.ams.repository.ExpenseItemsRepository;
 import com.drps.ams.repository.ExpensesRepository;
 import com.drps.ams.repository.NotesRepository;
+import com.drps.ams.repository.UserDetailsRepository;
 import com.drps.ams.service.CommonService;
 import com.drps.ams.service.ExpensesService;
 import com.drps.ams.service.NotesService;
+import com.drps.ams.service.UserDetailsService;
 import com.drps.ams.service.VoucherNoService;
 import com.drps.ams.util.Utils;
 import com.drps.ams.util.ZipFileUtils;
@@ -93,6 +96,9 @@ public class ExpensesServiceImpl implements ExpensesService {
 	
 	@Autowired
 	NotesService notesService;
+	
+	@Autowired
+	UserDetailsService userDetailsService;
 
 	@Transactional
 	@Override
@@ -239,7 +245,9 @@ public class ExpensesServiceImpl implements ExpensesService {
 				path = path + VOUCHAR_PATH;
 				String filePath = FileUtils.prepairFilePathForVouchar(userContext, path, entity);
 				String sigPath = FileUtils.getSignatureFilePath(userContext, storagePath);
-				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null);
+				String treasurerSignPath = FileUtils.getSignatureFilePath(userDetailsService.findAnyOneUserByRole(ApiConstants.USER_ROLE_TREASURER), storagePath);
+				String secretarySignPath = FileUtils.getSignatureFilePath(userDetailsService.findAnyOneUserByRole(ApiConstants.USER_ROLE_SECRETARY), storagePath);
+				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null, sigPath, treasurerSignPath, secretarySignPath);
 				file = pdf.getFile();
 			}
 		}

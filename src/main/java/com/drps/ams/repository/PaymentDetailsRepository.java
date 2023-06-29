@@ -66,5 +66,6 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetailsEn
 	@Query("SELECT p, e.name FROM PaymentDetailsEntity p, EventsEntity e WHERE e.id = p.eventId AND p.apartmentId = :apartmentId AND p.sessionId = :sessionId AND p.paymentDate BETWEEN :startDt AND :endDt")
 	public List<Object[]> getMonthlyPaymentDetailsList(Long apartmentId, Long sessionId, Date startDt, Date endDt);
 	
-	
+	@Query("SELECT (count(p) > 0) FROM PaymentDetailsEntity p WHERE p.eventId = :eventId")
+	public boolean isEventExist(Long eventId);
 }

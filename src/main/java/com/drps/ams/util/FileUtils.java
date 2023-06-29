@@ -10,9 +10,11 @@ import java.nio.file.Paths;
 import org.apache.commons.lang3.StringUtils;
 
 import com.drps.ams.bean.UserContext;
+import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.entity.ExpensesEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.PaymentEntity;
+import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.FileStorageException;
 
 public class FileUtils {
@@ -148,6 +150,17 @@ public class FileUtils {
 		return path;
 	}
 	
+	public static String getApplicationBaseFilePath(Long aprtmentId, String rootPath) {
+		
+		// dir for Session
+		String path = "aprt_" + aprtmentId;
+		
+		if(rootPath != null && !StringUtils.isBlank(rootPath)) {
+			path = rootPath.trim() + "/" + path;
+		}
+		return path;
+	}
+	
 	public static String getSignatureFilePath(UserContext userContext, String rootPath) {
 		String sigPath = FileUtils.getApplicationBaseFilePath(userContext, rootPath, false);
 		sigPath = sigPath + "/user-signature/signature_" + userContext.getUserId();
@@ -160,6 +173,28 @@ public class FileUtils {
 			sigPath = sigPath + ".png";
 		} else {
 			return null;
+		}
+		return sigPath;
+	}
+	
+	
+	public static String getSignatureFilePath(UserDetailsDTO userDetailsDTO, String rootPath) {
+		String sigPath = "";
+		try {
+			sigPath = FileUtils.getApplicationBaseFilePath(userDetailsDTO.getApartmentId(), rootPath);
+			sigPath = sigPath + "/user-signature/signature_" + userDetailsDTO.getId();
+			
+			if(new File(sigPath + ".jpg").exists()) {
+				sigPath = sigPath + ".jpg";
+			} else if(new File(sigPath + ".jpeg").exists()) {
+				sigPath = sigPath + ".jpeg";
+			} else if(new File(sigPath + ".png").exists()) {
+				sigPath = sigPath + ".png";
+			} else {
+				return null;
+			}
+		}catch (Exception e) {
+			return StringUtils.EMPTY;
 		}
 		return sigPath;
 	}

@@ -134,6 +134,13 @@ public class ApiConstants {
 	public static final String SADMIN_USER_NAME = "Super Admin";
 	
 	public static final String USER_ROLE_SADMIN = "SADMIN";
+	public static final String USER_ROLE_USER = "USER";
+	public static final String USER_ROLE_ADMIN = "ADMIN";
+	public static final String USER_ROLE_SECRETARY = "SECRETARY";
+	public static final String USER_ROLE_ASST_SECRETARY = "ASST-SECRETARY";
+	public static final String USER_ROLE_TREASURER = "TREASURER";
+	public static final String USER_ROLE_ASST_TREASURER = "ASST-TREASURER";
+	
 	public static final String SADMIN_CONTACT_NO = "1111111111";
 	public static final String USER_DEFAULT_PASSWORD = "pass";
 	

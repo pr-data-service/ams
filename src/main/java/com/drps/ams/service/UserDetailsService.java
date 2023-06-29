@@ -12,6 +12,7 @@ import com.drps.ams.dto.ApiResponseEntity;
 import com.drps.ams.dto.UserDetailsDTO;
 import com.drps.ams.dto.UserPasswordDTO;
 import com.drps.ams.dto.UserRoleUpdateDTO;
+import com.drps.ams.entity.UserDetailsEntity;
 
 import lombok.NonNull;
 
@@ -33,4 +34,6 @@ public interface UserDetailsService {
 	ApiResponseEntity updateOnlyUserRole(UserRoleUpdateDTO dto);
 	ApiResponseEntity removeUserRole(@NonNull Long id);
 	Map<String, List<String>> getUserPermissions(Long apartmentId, String role);
+	UserDetailsDTO findAnyOneUserByRole(String role);
+	List<UserDetailsDTO> findUserListByRole(String role);
 }

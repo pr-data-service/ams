@@ -39,4 +39,7 @@ public interface UserDetailsRepository extends JpaRepository<UserDetailsEntity, 
 	
 	@Query("SELECT f FROM UserDetailsEntity f WHERE f.type = 'USER' AND f.role = 'SADMIN'")
 	UserDetailsEntity findSAdmin();
+	
+	@Query("SELECT f FROM UserDetailsEntity f WHERE f.type = 'USER' AND f.role = :role")
+	List<UserDetailsEntity> findUserByRole(String role);
 }

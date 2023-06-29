@@ -393,6 +393,11 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 		UserContext userContext = Utils.getUserContext();
 		
 		if(dto.getId() != null && dto.getId() > 0) {
+			if(ApiConstants.USER_ROLE_TREASURER.equals(dto.getRole()) || ApiConstants.USER_ROLE_SECRETARY.equals(dto.getRole())) {
+				if(findAnyOneUserByRole(ApiConstants.USER_ROLE_TREASURER) != null || findAnyOneUserByRole(ApiConstants.USER_ROLE_SECRETARY) != null) {
+					throw new RuntimeException("This group of secretary already exist.");
+				}
+			}
 			userDetailsRepository.updateUserRole(dto.getRole(), ApiConstants.USER_DEFAULT_PASSWORD, dto.getId()); 
 			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, null);
 		} else {
@@ -417,5 +422,23 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 		
 		List<UserRolePermissionEntity> list = userRolePermissionRepository.findByRole(apartmentId, role);
 		return list.stream().collect(Collectors.toMap(UserRolePermissionEntity::getObject, Utils::getPermissionList));
+	}
+
+	@Override
+	public List<UserDetailsDTO> findUserListByRole(String role) {
+		List<UserDetailsEntity> list = userDetailsRepository.findUserByRole(role);
+		return Utils.convertList(list, UserDetailsDTO.class);
+	}
+	
+	@Override
+	public UserDetailsDTO findAnyOneUserByRole(String role) {
+		List<UserDetailsEntity> listEntity = userDetailsRepository.findUserByRole(role);
+		if(!listEntity.isEmpty()) {
+			UserDetailsEntity entity = listEntity.get(0);
+			UserDetailsDTO dto = new UserDetailsDTO();
+			BeanUtils.copyProperties(entity, dto);
+			return dto;
+		}
+		return null;
 	}
 }

@@ -21,9 +21,11 @@ import com.drps.ams.entity.PaymentEntity;
 import com.drps.ams.util.DateUtils;
 import com.drps.ams.util.NumberToWordsConverter;
 import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
@@ -65,14 +67,20 @@ public class ExpenseVoucherPDF {
     private static List<ExpenseItemsEntity> expenseItemList;
     private static Map<String, Object> result;
     private static Map<Long, String> eventListMap;
+    private static String signaturePath;
+    private static String treasurerSignPath;
+    private static String secretarySignPath;
     
     public ExpenseVoucherPDF(String filePath, ExpensesEntity entity, List<ExpenseItemsEntity> expenseItemList, 
-    		Map<String, Object> result, Map<Long, String> eventListMap) {
+    		Map<String, Object> result, Map<Long, String> eventListMap, String signaturePath, String treasurerSignPath, String secretarySignPath) {
     	this.FILE = filePath;
     	this.entity = entity;
     	this.expenseItemList = expenseItemList;
     	this.result = result;
     	this.eventListMap = eventListMap;
+    	this.signaturePath = signaturePath;
+    	this.treasurerSignPath = treasurerSignPath;
+    	this.secretarySignPath = secretarySignPath;
     }
     
     public File getFile() {
@@ -120,7 +128,7 @@ public class ExpenseVoucherPDF {
 		float llx = 592;
         float lly = 837; //355
         float urx = 3;
-        float ury = 465;
+        float ury = 455;
         Rectangle rectBorder = new Rectangle(llx, lly, urx, ury);
         rectBorder.setBorderColor(BaseColor.BLACK);
         rectBorder.setBorder(Rectangle.BOX);
@@ -227,13 +235,33 @@ public class ExpenseVoucherPDF {
         cell2.setColspan(3);
         tblBody.addCell(cell2);
         
+//        PdfPCell cell3 = new PdfPCell();
+//        cell3.setPadding(14f);
+//        cell3.addElement(addLeftAlignText(
+//        		"              Treasurer                                             						   Secretary                                                        					                 Received By", normalFont));
+//        cell3.setBorder(Rectangle.NO_BORDER);
+//        cell3.setColspan(3);
+//        tblBody.addCell(cell3);
+        
         PdfPCell cell3 = new PdfPCell();
-        cell3.setPadding(14f);
-        cell3.addElement(addLeftAlignText(
+		cell3.setBorder(PdfPCell.NO_BORDER);
+		cell3.setFixedHeight(25f);
+		cell3.setPaddingTop(0f);
+		cell3.setPaddingLeft(2f);
+		cell3.setColspan(3);
+        
+		addSignatureRow(tblBody);
+        
+        PdfPCell cell4 = new PdfPCell();
+        cell4.setPaddingLeft(14f);
+        cell4.setPaddingRight(14f);
+        cell4.setPaddingTop(0f);
+        cell4.setPaddingBottom(0f);
+        cell4.addElement(addLeftAlignText(
         		"              Treasurer                                             						   Secretary                                                        					                 Received By", normalFont));
-        cell3.setBorder(Rectangle.NO_BORDER);
-        cell3.setColspan(3);
-        tblBody.addCell(cell3);
+        cell4.setBorder(Rectangle.NO_BORDER);
+        cell4.setColspan(3);
+        tblBody.addCell(cell4);
         
         
     	PdfPCell cellOne = new PdfPCell();
@@ -242,6 +270,100 @@ public class ExpenseVoucherPDF {
     	cellOne.setBorder(Rectangle.NO_BORDER);
     	cellOne.setColspan(2);
         table.addCell(cellOne);
+    }
+	
+	private static void addSignatureRow(PdfPTable table) {
+		
+		PdfPCell sig1 = addTreasurerSignature(table);
+		PdfPCell sig2 = addSecretarySignature(table);
+		PdfPCell sig3 = addSignature(table);
+	    
+    }
+
+	private static PdfPCell addSignature(PdfPTable table) {
+		
+		PdfPCell cellOne = new PdfPCell();
+		cellOne.setBorder(PdfPCell.NO_BORDER);
+		cellOne.setFixedHeight(25f);
+		cellOne.setPaddingTop(0f);
+		cellOne.setPaddingLeft(2f);
+		
+		
+		Paragraph p = new Paragraph();
+		if(signaturePath != null && new File(signaturePath).exists()) {
+			Image img=null;
+			try {
+				img = Image.getInstance(signaturePath);
+				p.add(new Chunk(img, 0, 0, true));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		} else {
+			p.add(new Chunk(""));
+		}
+		
+		p.setAlignment(Paragraph.ALIGN_RIGHT);
+		cellOne.addElement(p);
+		table.addCell(cellOne);
+		return cellOne;
+    }
+	
+	private static PdfPCell addSecretarySignature(PdfPTable table) {
+		
+		PdfPCell cellOne = new PdfPCell();
+		cellOne.setBorder(PdfPCell.NO_BORDER);
+		cellOne.setFixedHeight(25f);
+		cellOne.setPaddingTop(0f);
+		cellOne.setPaddingLeft(2f);
+		cellOne.setPaddingRight(200f);
+		
+		Paragraph p = new Paragraph();
+		if(secretarySignPath != null && new File(secretarySignPath).exists()) {
+			Image img=null;
+			try {
+				img = Image.getInstance(secretarySignPath);
+				p.add(new Chunk(img, 0, 0, true));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		} else {
+			p.add(new Chunk(""));
+		}
+		
+		p.setAlignment(Paragraph.ALIGN_RIGHT);
+		cellOne.addElement(p);
+		table.addCell(cellOne);
+		return cellOne;
+    }
+	
+	private static PdfPCell addTreasurerSignature(PdfPTable table) {
+		
+		PdfPCell cellOne = new PdfPCell();
+		cellOne.setBorder(PdfPCell.NO_BORDER);
+		cellOne.setFixedHeight(25f);
+		cellOne.setPaddingTop(5f);
+		cellOne.setPaddingLeft(40f);
+		
+		Paragraph p = new Paragraph();
+		if(treasurerSignPath != null && new File(treasurerSignPath).exists()) {
+			Image img=null;
+			try {
+				img = Image.getInstance(treasurerSignPath);
+				p.add(new Chunk(img, 0, 0, true));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		} else {
+			p.add(new Chunk(""));
+		}
+		
+		p.setAlignment(Paragraph.ALIGN_RIGHT);
+		cellOne.addElement(p);
+		table.addCell(cellOne);
+		return cellOne;
     }
 	
 	private static void addBodyContentTitle(PdfPTable table) {
@@ -267,7 +389,7 @@ public class ExpenseVoucherPDF {
     	cellOne.setPaddingBottom(5f);
     	cellOne.addElement(addLeftAlignText("Debit: " + (entity.getTitle() == null ? "" : entity.getTitle()), normalFont));
     	cellOne.addElement(addLeftAlignText("A/C....." + (entity.getAccountNo() == null ? "" : entity.getAccountNo()), normalFont));
-    	cellOne.addElement(addLeftAlignText("Beling the amount paid to............................................................. ", normalFont));
+    	//cellOne.addElement(addLeftAlignText("Beling the amount paid to............................................................. ", normalFont));
     	cellOne.setBorder(Rectangle.NO_BORDER);
     	cellOne.setColspan(2);
         table.addCell(cellOne);

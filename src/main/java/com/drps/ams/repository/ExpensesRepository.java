@@ -30,4 +30,7 @@ public interface ExpensesRepository extends JpaRepository<ExpensesEntity, Long>,
 			+" AND (ev.id = e.eventId OR e.eventId IS NULL)" 
 			+" AND e.expenseDate BETWEEN :startDate AND :endDate")
 	public List<Object[]> getMonthlyExpensesList (Long apartmentId, Long sessionId, Date startDate, Date endDate);
+	
+	@Query("SELECT (count(e) > 0) FROM ExpensesEntity e WHERE e.eventId = :eventId")
+	public boolean isEventExist(Long eventId);
 }
