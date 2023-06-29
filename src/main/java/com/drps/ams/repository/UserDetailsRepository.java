@@ -29,11 +29,6 @@ public interface UserDetailsRepository extends JpaRepository<UserDetailsEntity, 
 	
 	@Modifying(clearAutomatically = true)
 	@Transactional
-	@Query("UPDATE UserDetailsEntity U SET U.type = 'USER', U.role = :role, U.password = :defaultPassword WHERE U.id = :id")
-	void updateUserRole (String role, String defaultPassword, Long id);
-	
-	@Modifying(clearAutomatically = true)
-	@Transactional
 	@Query("UPDATE UserDetailsEntity U SET U.type = 'OWNER', U.role = NULL WHERE U.id = :id")
 	void removeUserRole (Long id);
 	

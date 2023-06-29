@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -398,7 +399,18 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 					throw new RuntimeException("This group of secretary already exist.");
 				}
 			}
-			userDetailsRepository.updateUserRole(dto.getRole(), ApiConstants.USER_DEFAULT_PASSWORD, dto.getId()); 
+			
+			UserDetailsEntity userDetailsEntity = userDetailsRepository.findById(dto.getId()).get();
+			if(userDetailsEntity != null) {
+				userDetailsEntity.setType(ApiConstants.USER_TYPE_USER);
+				userDetailsEntity.setRole(dto.getRole());
+				if(Objects.isNull(userDetailsEntity.getRole()) || StringUtils.isEmpty(userDetailsEntity.getRole())) {
+					userDetailsEntity.setPassword(ApiConstants.USER_DEFAULT_PASSWORD);
+				}
+				userDetailsRepository.save(userDetailsEntity);
+			} else {
+				throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+			}
 			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, null);
 		} else {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
