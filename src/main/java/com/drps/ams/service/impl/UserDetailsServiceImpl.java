@@ -91,8 +91,8 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 			userDetailsEntity.setType(ApiConstants.USER_TYPE_USER);
 			userDetailsEntity.setRole(ApiConstants.USER_ROLE_SADMIN);
 			userDetailsEntity.setFirstName(ApiConstants.SADMIN_USER_NAME);
-			userDetailsEntity.setContactNo1("1111111111");
-			userDetailsEntity.setPassword("pass");
+			userDetailsEntity.setContactNo1(ApiConstants.SADMIN_CONTACT_NO);
+			userDetailsEntity.setPassword(ApiConstants.USER_DEFAULT_PASSWORD);
 			userDetailsEntity.setApartmentId(Long.valueOf(0));
 			userDetailsEntity.setIsActive(true);
 			userDetailsEntity.setCreatedBy(ApiConstants.SYSTEM_USER_ID);
@@ -193,7 +193,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 	public ApiResponseEntity get() {
 		UserContext userContext = Utils.getUserContext();
 				
-		List<UserDetailsEntity> list = userDetailsRepository.findAll();
+		List<UserDetailsEntity> list = userDetailsRepository.getAll(userContext.getApartmentId());
 
 		List<UserDetailsDTO> rtnList = new ArrayList<>();
 		if (list != null) {
@@ -393,7 +393,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 		UserContext userContext = Utils.getUserContext();
 		
 		if(dto.getId() != null && dto.getId() > 0) {
-			userDetailsRepository.updateUserRole(dto.getRole(), dto.getId()); 
+			userDetailsRepository.updateUserRole(dto.getRole(), ApiConstants.USER_DEFAULT_PASSWORD, dto.getId()); 
 			return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, null);
 		} else {
 			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));

@@ -134,6 +134,8 @@ public class ApiConstants {
 	public static final String SADMIN_USER_NAME = "Super Admin";
 	
 	public static final String USER_ROLE_SADMIN = "SADMIN";
+	public static final String SADMIN_CONTACT_NO = "1111111111";
+	public static final String USER_DEFAULT_PASSWORD = "pass";
 	
 	public static final String USER_TYPE_OWNER = "OWNER";
 	public static final String USER_TYPE_USER = "USER";
@@ -142,5 +144,6 @@ public class ApiConstants {
 	public static final String USER_PERMISSION_VIEW = "VIEW";
 	public static final String USER_PERMISSION_EDIT = "EDIT";
 	public static final String USER_PERMISSION_DELETE = "DELETE";
+	
 	
 }

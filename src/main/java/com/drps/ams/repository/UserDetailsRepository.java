@@ -17,7 +17,11 @@ public interface UserDetailsRepository extends JpaRepository<UserDetailsEntity, 
 
 	List<UserDetailsEntity> findByContactNo1(String contactNo1);
 	
-	@Query("SELECT f FROM UserDetailsEntity f WHERE f.apartmentId = :apartmentId")
+	@Query("SELECT f FROM UserDetailsEntity f WHERE f.type = 'USER' AND f.contactNo1 = :contactNo1")
+	List<UserDetailsEntity> findLoginUserByContactNo1(String contactNo1);
+	
+	@Query("SELECT f FROM UserDetailsEntity f WHERE f.apartmentId = :apartmentId AND"
+			+ "(f.role IS NULL OR f.role != 'SADMIN')")
 	List<UserDetailsEntity> getAll(Long apartmentId);
 	
 	@Query("SELECT f FROM UserDetailsEntity f WHERE f.type = 'USER' AND f.apartmentId = :apartmentId")
@@ -25,8 +29,8 @@ public interface UserDetailsRepository extends JpaRepository<UserDetailsEntity, 
 	
 	@Modifying(clearAutomatically = true)
 	@Transactional
-	@Query("UPDATE UserDetailsEntity U SET U.type = 'USER', U.role = :role WHERE U.id = :id")
-	void updateUserRole (String role, Long id);
+	@Query("UPDATE UserDetailsEntity U SET U.type = 'USER', U.role = :role, U.password = :defaultPassword WHERE U.id = :id")
+	void updateUserRole (String role, String defaultPassword, Long id);
 	
 	@Modifying(clearAutomatically = true)
 	@Transactional

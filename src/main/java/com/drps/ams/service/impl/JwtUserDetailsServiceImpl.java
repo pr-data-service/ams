@@ -38,7 +38,7 @@ public class JwtUserDetailsServiceImpl implements UserDetailsService {
 	@Override
 	public UserContext loadUserByUsername(String username) throws UsernameNotFoundException {
 		
-		List<UserDetailsEntity> list = userDetailsRepository.findByContactNo1(username);
+		List<UserDetailsEntity> list = userDetailsRepository.findLoginUserByContactNo1(username);
 		
 		if (list != null && !list.isEmpty() && username.equals(list.get(0).getContactNo1())) {
 			UserDetailsEntity user = list.get(0);
@@ -61,7 +61,7 @@ public class JwtUserDetailsServiceImpl implements UserDetailsService {
 //					"$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6",
 //					new ArrayList<>());
 		} else {
-			throw new UsernameNotFoundException("User not found with username: " + username);
+			throw new UsernameNotFoundException("User not found with role: USER and username: " + username);
 		}
 	}
 }
