@@ -110,8 +110,6 @@ public class FileUtils {
 	
 	public static String prepairFilePathForVouchar(UserContext userContext, String path, ExpensesEntity entity){
 		
-		path = path + "/" + getApplicationBaseFilePath(userContext, path, true);
-		
 		// Month wise dir creation.....
 		String monthYear = DateUtils.dateToString(entity.getExpenseDate(), "MM-yyyy");
 		path = path + "/" + monthYear;

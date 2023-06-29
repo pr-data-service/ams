@@ -237,7 +237,8 @@ public class ExpensesServiceImpl implements ExpensesService {
 				
 				String path = FileUtils.getApplicationBaseFilePath(userContext, storagePath, true);
 				path = path + VOUCHAR_PATH;
-				String filePath = FileUtils.prepairFilePathForVouchar(userContext, storagePath, entity);
+				String filePath = FileUtils.prepairFilePathForVouchar(userContext, path, entity);
+				String sigPath = FileUtils.getSignatureFilePath(userContext, storagePath);
 				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null);
 				file = pdf.getFile();
 			}
