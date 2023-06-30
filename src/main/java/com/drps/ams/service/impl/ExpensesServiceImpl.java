@@ -43,6 +43,7 @@ import com.drps.ams.entity.SessionDetailsEntity;
 import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.exception.FileStorageException;
 import com.drps.ams.exception.NoRecordFoundException;
+import com.drps.ams.exception.RecordCanceledException;
 import com.drps.ams.exception.RecordIdNotFoundException;
 import com.drps.ams.exception.UserContextNotFoundException;
 import com.drps.ams.repository.ExpenseItemsRepository;
@@ -395,5 +396,51 @@ public class ExpensesServiceImpl implements ExpensesService {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	@Override
+	public ApiResponseEntity getApprovedList (Long expenseId) {
+		if(expenseId != null && expenseId > 0) {
+			ExpensesEntity entity = expensesRepository.getById(expenseId);
+			if (entity != null) {
+				List<String> approvedList = new ArrayList<>();
+				if (entity.getIsSecApprov() != null && entity.getIsSecApprov()) {
+					approvedList.add(ApiConstants.USER_ROLE_SECRETARY);
+				}
+				if (entity.getIsTrsApprov() != null && entity.getIsTrsApprov()) {
+					approvedList.add(ApiConstants.USER_ROLE_TREASURER);
+				}
+				return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, approvedList);
+			} else {
+				throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+			}
+		} else {
+			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
+		}
+	}
+	
+	@Override
+	public ApiResponseEntity expensesApproved (String role, Long expenseId) {
+		
+		if(expenseId != null && expenseId > 0) {
+			ExpensesEntity entity = expensesRepository.getById(expenseId);
+			if (entity != null) {
+				if(entity.getIsCanceled() == null || entity.getIsCanceled() == false) {
+					if (role.equals(ApiConstants.USER_ROLE_SECRETARY)) {
+						expensesRepository.secretaryApproved(expenseId);
+					} else if (role.equals(ApiConstants.USER_ROLE_TREASURER)) {
+						expensesRepository.treasurerApproved(expenseId);
+					}
+					return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, null); 
+				} else {
+					throw new RecordCanceledException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_CANCELED_EXCEPTION));
+				}
+			} else {
+				throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
+			}
+		} else {
+			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
+		}
+		
 	}
 }

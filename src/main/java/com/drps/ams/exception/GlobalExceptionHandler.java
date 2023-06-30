@@ -62,6 +62,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 	
+	@ExceptionHandler(RecordCanceledException.class)
+    public ResponseEntity<ApiResponseEntity> exception(RecordCanceledException exception, WebRequest webRequest) {
+    	ApiResponseEntity response = new ApiResponseEntity(ApiConstants.RESP_STATUS_RECORD_CANCELED_EXCEPTION, exception.getMessage());      
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+	
 	@ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseEntity> exception(Exception exception, WebRequest webRequest) {
     	ApiResponseEntity response = new ApiResponseEntity(ApiConstants.RESP_STATUS_EXCEPTION, exception.getCause().getCause().getMessage());      

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.drps.ams.dto.ApiResponseEntity;
+import com.drps.ams.dto.ExpenseApprovedDTO;
 import com.drps.ams.dto.ExpensesDTO;
 import com.drps.ams.dto.PaymentOrVoucharCancelDTO;
 import com.drps.ams.service.ExpensesService;
@@ -66,6 +67,18 @@ public class ExpensesController {
 	public ResponseEntity<ApiResponseEntity> deleteById(@PathVariable("id") Long id) throws Exception {
 		logger.info("AMS - ExpensesController deleteById");
 		return ResponseEntity.status(HttpStatus.OK).body(expensesService.deleteById(id));		
+	}
+	
+	@GetMapping(value = "/approve-list/get/{id}")
+	public ResponseEntity<ApiResponseEntity> getApprovedList(@PathVariable("id") Long id) throws Exception {
+		logger.info("AMS - ExpensesController getApprovedList");
+		return ResponseEntity.status(HttpStatus.OK).body(expensesService.getApprovedList(id));		
+	}
+	
+	@PostMapping(value = "/approved")
+	public ResponseEntity<ApiResponseEntity> approved (@RequestBody ExpenseApprovedDTO dto) throws Exception {
+		logger.info("AMS - ExpensesController approved: {}", dto);
+		return ResponseEntity.status(HttpStatus.OK).body(expensesService.expensesApproved(dto.getRole(), dto.getExpenseId()));		
 	}
 	
 	@GetMapping(value = "/download/{id}")

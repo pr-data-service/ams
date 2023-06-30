@@ -42,6 +42,12 @@ public class ExpensesEntity {
 	@Column(name = "AMOUNT")
 	private Double amount;
 	
+	@Column(name= "IS_SEC_APPROV")
+	private Boolean isSecApprov;
+	
+	@Column(name= "IS_TRS_APPROV")
+	private Boolean isTrsApprov;
+	
 	@Column(name = "DESCRIPTION")
 	private String description;
 	

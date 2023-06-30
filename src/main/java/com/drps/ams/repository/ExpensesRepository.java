@@ -6,9 +6,11 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.drps.ams.entity.ExpensesEntity;
 
@@ -33,4 +35,14 @@ public interface ExpensesRepository extends JpaRepository<ExpensesEntity, Long>,
 	
 	@Query("SELECT (count(e) > 0) FROM ExpensesEntity e WHERE e.eventId = :eventId")
 	public boolean isEventExist(Long eventId);
+	
+	@Modifying(clearAutomatically = true)
+	@Transactional
+	@Query("UPDATE ExpensesEntity e SET e.isSecApprov = TRUE WHERE e.id = :expenseId")
+	public void secretaryApproved (Long expenseId);
+	
+	@Modifying(clearAutomatically = true)
+	@Transactional
+	@Query("UPDATE ExpensesEntity e SET e.isTrsApprov = TRUE WHERE e.id = :expenseId")
+	public void treasurerApproved (Long expenseId); 
 }
