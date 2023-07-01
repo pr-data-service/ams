@@ -238,17 +238,17 @@ public class ExpensesServiceImpl implements ExpensesService {
 		File file = null;
 		if(id != null && id > 0) {
 			Map<String, Object> result = new HashMap<>();
-			ExpensesEntity entity = expensesRepository.getById(id);
+			ExpensesEntity entity = expensesRepository.findByExpenseId(userContext.getApartmentId(), id);
 			if(entity != null) {
 				List<ExpenseItemsEntity> expenseItemList = expenseItemsRepository.findByExpenseId(userContext.getApartmentId(), userContext.getSessionId(), id);
 				
 				String path = FileUtils.getApplicationBaseFilePath(userContext, storagePath, true);
 				path = path + VOUCHAR_PATH;
 				String filePath = FileUtils.prepairFilePathForVouchar(userContext, path, entity);
-				String sigPath = FileUtils.getSignatureFilePath(userContext, storagePath);
-				String treasurerSignPath = FileUtils.getSignatureFilePath(userDetailsService.findAnyOneUserByRole(ApiConstants.USER_ROLE_TREASURER), storagePath);
-				String secretarySignPath = FileUtils.getSignatureFilePath(userDetailsService.findAnyOneUserByRole(ApiConstants.USER_ROLE_SECRETARY), storagePath);
-				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null, sigPath, treasurerSignPath, secretarySignPath);
+//				String sigPath = FileUtils.getSignatureFilePath(userContext.getUserId(), userContext.getApartmentId(), storagePath);					
+				String treasurerSignPath = FileUtils.getSignatureFilePath(entity.getApprovedByTrsId(), userContext.getApartmentId(), storagePath);
+				String secretarySignPath = FileUtils.getSignatureFilePath(entity.getApprovedbySecId(), userContext.getApartmentId(), storagePath);
+				ExpenseVoucherPDF pdf = new ExpenseVoucherPDF(filePath, entity, expenseItemList, result, null, treasurerSignPath, secretarySignPath);
 				file = pdf.getFile();
 			}
 		}
@@ -399,37 +399,17 @@ public class ExpensesServiceImpl implements ExpensesService {
 	}
 	
 	@Override
-	public ApiResponseEntity getApprovedList (Long expenseId) {
-		if(expenseId != null && expenseId > 0) {
-			ExpensesEntity entity = expensesRepository.getById(expenseId);
-			if (entity != null) {
-				List<String> approvedList = new ArrayList<>();
-				if (entity.getIsSecApprov() != null && entity.getIsSecApprov()) {
-					approvedList.add(ApiConstants.USER_ROLE_SECRETARY);
-				}
-				if (entity.getIsTrsApprov() != null && entity.getIsTrsApprov()) {
-					approvedList.add(ApiConstants.USER_ROLE_TREASURER);
-				}
-				return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, approvedList);
-			} else {
-				throw new NoRecordFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_NO_RECORD_FOUND_EXCEPTION));
-			}
-		} else {
-			throw new RecordIdNotFoundException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_RECORD_ID_NOT_FOUND_EXCEPTION));
-		}
-	}
-	
-	@Override
 	public ApiResponseEntity expensesApproved (String role, Long expenseId) {
-		
+		UserContext context = Utils.getUserContext();
+
 		if(expenseId != null && expenseId > 0) {
-			ExpensesEntity entity = expensesRepository.getById(expenseId);
+			ExpensesEntity entity = expensesRepository.findByExpenseId(context.getApartmentId(), expenseId);
 			if (entity != null) {
 				if(entity.getIsCanceled() == null || entity.getIsCanceled() == false) {
 					if (role.equals(ApiConstants.USER_ROLE_SECRETARY)) {
-						expensesRepository.secretaryApproved(expenseId);
+						expensesRepository.secretaryApproved(context.getUserId(), context.getApartmentId(), expenseId);
 					} else if (role.equals(ApiConstants.USER_ROLE_TREASURER)) {
-						expensesRepository.treasurerApproved(expenseId);
+						expensesRepository.treasurerApproved(context.getUserId(), context.getApartmentId(), expenseId);
 					}
 					return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, null); 
 				} else {

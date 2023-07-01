@@ -30,18 +30,9 @@ public class ExpenseHeadEntity {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name = "ID")
 	private Long id;
-	
-	@Column(name = "EVENT_ID")
-	private Long eventId;
 
 	@Column(name = "TITLE")
 	private String title;
-
-	@Column(name = "DESCRIPTION")
-	private String description;
-
-	@Column(name = "SESSION_ID")
-	public Long sessionId;
 	
 	@Column(name = "APARTMENT_ID")
 	private Long apartmentId;	

@@ -178,11 +178,11 @@ public class FileUtils {
 	}
 	
 	
-	public static String getSignatureFilePath(UserDetailsDTO userDetailsDTO, String rootPath) {
+	public static String getSignatureFilePath(Long userId, Long apartmentId, String rootPath) {
 		String sigPath = "";
 		try {
-			sigPath = FileUtils.getApplicationBaseFilePath(userDetailsDTO.getApartmentId(), rootPath);
-			sigPath = sigPath + "/user-signature/signature_" + userDetailsDTO.getId();
+			sigPath = FileUtils.getApplicationBaseFilePath(apartmentId, rootPath);
+			sigPath = sigPath + "/user-signature/signature_" + userId;
 			
 			if(new File(sigPath + ".jpg").exists()) {
 				sigPath = sigPath + ".jpg";

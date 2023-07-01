@@ -36,13 +36,16 @@ public interface ExpensesRepository extends JpaRepository<ExpensesEntity, Long>,
 	@Query("SELECT (count(e) > 0) FROM ExpensesEntity e WHERE e.eventId = :eventId")
 	public boolean isEventExist(Long eventId);
 	
-	@Modifying(clearAutomatically = true)
-	@Transactional
-	@Query("UPDATE ExpensesEntity e SET e.isSecApprov = TRUE WHERE e.id = :expenseId")
-	public void secretaryApproved (Long expenseId);
+	@Query("SELECT f FROM ExpensesEntity f WHERE f.apartmentId = :apartmentId AND f.id = :expenseId")
+	public ExpensesEntity findByExpenseId (Long apartmentId, Long expenseId); 
 	
 	@Modifying(clearAutomatically = true)
 	@Transactional
-	@Query("UPDATE ExpensesEntity e SET e.isTrsApprov = TRUE WHERE e.id = :expenseId")
-	public void treasurerApproved (Long expenseId); 
+	@Query("UPDATE ExpensesEntity e SET e.approvedbySecId = :id WHERE e.apartmentId = :apartmentId AND e.id = :expenseId")
+	public void secretaryApproved (Long id, Long apartmentId, Long expenseId);
+	
+	@Modifying(clearAutomatically = true)
+	@Transactional
+	@Query("UPDATE ExpensesEntity e SET e.approvedByTrsId = :id WHERE e.apartmentId = :apartmentId AND e.id = :expenseId")
+	public void treasurerApproved (Long id, Long apartmentId, Long expenseId); 
 }

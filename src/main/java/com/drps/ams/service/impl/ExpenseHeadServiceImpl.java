@@ -50,7 +50,6 @@ public class ExpenseHeadServiceImpl implements ExpenseHeadService {
 		} else {
 			expenseHeadEntity = new ExpenseHeadEntity();
 			BeanUtils.copyProperties(expenseHeadDTO, expenseHeadEntity);
-			expenseHeadEntity.setSessionId(userContext.getSessionId());
 			expenseHeadEntity.setApartmentId(userContext.getApartmentId());
 			expenseHeadEntity.setCreatedBy(userContext.getUserDetailsEntity().getId());
 			expenseHeadEntity.setModifiedBy(userContext.getUserDetailsEntity().getId());
@@ -80,7 +79,7 @@ public class ExpenseHeadServiceImpl implements ExpenseHeadService {
 	public ApiResponseEntity get() {
 		UserContext userContext = Utils.getUserContext();
 		
-		List<ExpenseHeadEntity> list = expenseHeadRepository.getAll(userContext.getApartmentId(), userContext.getSessionId());
+		List<ExpenseHeadEntity> list = expenseHeadRepository.getAll(userContext.getApartmentId());
 		List<ExpenseHeadDTO> rtnList = Utils.convertList(list, ExpenseHeadDTO.class);
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
 	}
@@ -130,7 +129,7 @@ public class ExpenseHeadServiceImpl implements ExpenseHeadService {
 	private boolean isDuplicateRecord(ExpenseHeadDTO expenseHeadDTO) {
 		UserContext userContext = Utils.getUserContext();
 		
-		List<ExpenseHeadEntity> list = expenseHeadRepository.findByTitle(userContext.getApartmentId(), userContext.getSessionId(), expenseHeadDTO.getTitle());
+		List<ExpenseHeadEntity> list = expenseHeadRepository.findByTitle(userContext.getApartmentId(), expenseHeadDTO.getTitle());
 		if(list != null && expenseHeadDTO.getId() != null && expenseHeadDTO.getId() > 0) {
 			list = list.stream().filter( f -> f.getId() != expenseHeadDTO.getId()).collect(Collectors.toList());
 		}

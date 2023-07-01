@@ -67,18 +67,16 @@ public class ExpenseVoucherPDF {
     private static List<ExpenseItemsEntity> expenseItemList;
     private static Map<String, Object> result;
     private static Map<Long, String> eventListMap;
-    private static String signaturePath;
     private static String treasurerSignPath;
     private static String secretarySignPath;
     
     public ExpenseVoucherPDF(String filePath, ExpensesEntity entity, List<ExpenseItemsEntity> expenseItemList, 
-    		Map<String, Object> result, Map<Long, String> eventListMap, String signaturePath, String treasurerSignPath, String secretarySignPath) {
+    		Map<String, Object> result, Map<Long, String> eventListMap, String treasurerSignPath, String secretarySignPath) {
     	this.FILE = filePath;
     	this.entity = entity;
     	this.expenseItemList = expenseItemList;
     	this.result = result;
     	this.eventListMap = eventListMap;
-    	this.signaturePath = signaturePath;
     	this.treasurerSignPath = treasurerSignPath;
     	this.secretarySignPath = secretarySignPath;
     }
@@ -290,19 +288,7 @@ public class ExpenseVoucherPDF {
 		
 		
 		Paragraph p = new Paragraph();
-		if(signaturePath != null && new File(signaturePath).exists()) {
-			Image img=null;
-			try {
-				img = Image.getInstance(signaturePath);
-				p.add(new Chunk(img, 0, 0, true));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
-		} else {
-			p.add(new Chunk(""));
-		}
-		
+		p.add(new Chunk(""));
 		p.setAlignment(Paragraph.ALIGN_RIGHT);
 		cellOne.addElement(p);
 		table.addCell(cellOne);

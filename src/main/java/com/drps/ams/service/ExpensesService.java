@@ -34,8 +34,6 @@ public interface ExpensesService {
 
 	ExpenseInfo getExpenseInfo();
 
-	ApiResponseEntity getApprovedList(Long id);
-
 	ApiResponseEntity expensesApproved(String role, Long expenseId);
 
 }

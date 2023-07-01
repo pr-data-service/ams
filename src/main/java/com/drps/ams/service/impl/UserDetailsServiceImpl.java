@@ -394,8 +394,12 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserRolePermi
 		UserContext userContext = Utils.getUserContext();
 		
 		if(dto.getId() != null && dto.getId() > 0) {
-			if(ApiConstants.USER_ROLE_TREASURER.equals(dto.getRole()) || ApiConstants.USER_ROLE_SECRETARY.equals(dto.getRole())) {
-				if(findAnyOneUserByRole(ApiConstants.USER_ROLE_TREASURER) != null || findAnyOneUserByRole(ApiConstants.USER_ROLE_SECRETARY) != null) {
+			if(ApiConstants.USER_ROLE_TREASURER.equals(dto.getRole())) {
+				if(findAnyOneUserByRole(ApiConstants.USER_ROLE_TREASURER) != null) {
+					throw new RuntimeException("This group of secretary already exist.");
+				}
+			} else if(ApiConstants.USER_ROLE_SECRETARY.equals(dto.getRole())) {
+				if(findAnyOneUserByRole(ApiConstants.USER_ROLE_SECRETARY) != null) {
 					throw new RuntimeException("This group of secretary already exist.");
 				}
 			}

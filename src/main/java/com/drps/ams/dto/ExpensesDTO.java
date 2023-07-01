@@ -3,6 +3,8 @@ package com.drps.ams.dto;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Column;
+
 import com.drps.ams.annotation.EntityFieldMapping;
 import com.drps.ams.annotation.EntityMapping;
 import com.drps.ams.annotation.FKEntityFieldMapping;
@@ -32,6 +34,8 @@ public class ExpensesDTO {
 	public String accountNo;
 	public Double amount;
 	public String description;
+	private Long approvedbySecId;
+	private Long approvedByTrsId;
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
 	public Date expenseDate;
 	

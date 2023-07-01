@@ -20,10 +20,7 @@ import lombok.experimental.Accessors;
 public class ExpenseHeadDTO {
 
 	public Long id;	
-	public Long eventId;
 	public String title;
-	public String description;
-	public Long sessionId;
 	public Long apartmentId;	
 	public Long createdBy;	
 	public String createdByName;

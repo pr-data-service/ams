@@ -69,12 +69,6 @@ public class ExpensesController {
 		return ResponseEntity.status(HttpStatus.OK).body(expensesService.deleteById(id));		
 	}
 	
-	@GetMapping(value = "/approve-list/get/{id}")
-	public ResponseEntity<ApiResponseEntity> getApprovedList(@PathVariable("id") Long id) throws Exception {
-		logger.info("AMS - ExpensesController getApprovedList");
-		return ResponseEntity.status(HttpStatus.OK).body(expensesService.getApprovedList(id));		
-	}
-	
 	@PostMapping(value = "/approved")
 	public ResponseEntity<ApiResponseEntity> approved (@RequestBody ExpenseApprovedDTO dto) throws Exception {
 		logger.info("AMS - ExpensesController approved: {}", dto);

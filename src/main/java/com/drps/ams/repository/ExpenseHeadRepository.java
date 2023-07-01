@@ -14,9 +14,9 @@ import com.drps.ams.entity.FlatDetailsEntity;
 @Repository
 public interface ExpenseHeadRepository extends JpaRepository<ExpenseHeadEntity, Long>, CrudRepository<ExpenseHeadEntity, Long>,JpaSpecificationExecutor<ExpenseHeadEntity> {
 
-	@Query("SELECT f FROM ExpenseHeadEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId AND f.title = :title")
-	public List<ExpenseHeadEntity> findByTitle(Long apartmentId, Long sessionId, String title);
+	@Query("SELECT f FROM ExpenseHeadEntity f WHERE f.apartmentId = :apartmentId AND f.title = :title")
+	public List<ExpenseHeadEntity> findByTitle(Long apartmentId, String title);
 
-	@Query("SELECT f FROM ExpenseHeadEntity f WHERE f.apartmentId = :apartmentId AND f.sessionId = :sessionId")
-	public List<ExpenseHeadEntity> getAll(Long apartmentId, Long sessionId);
+	@Query("SELECT f FROM ExpenseHeadEntity f WHERE f.apartmentId = :apartmentId")
+	public List<ExpenseHeadEntity> getAll(Long apartmentId);
 }
