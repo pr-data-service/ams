@@ -386,7 +386,10 @@ public class ExpensesServiceImpl implements ExpensesService {
 		UserContext userContext = Utils.getUserContext();
 		try {
 			List<ExpensesEntity> list = expensesRepository.getAll(userContext.getApartmentId(), userContext.getSessionId());
-			list = list.stream().filter( f ->f.getIsCanceled() == null || !f.getIsCanceled()).collect(Collectors.toList());
+			list = list.stream().filter( f ->(f.getIsCanceled() == null || !f.getIsCanceled()) && 
+											(f.getApprovedbySecId() != null && f.getApprovedbySecId() > 0) &&
+											(f.getApprovedByTrsId() != null && f.getApprovedByTrsId() > 0)
+										).collect(Collectors.toList());
 			
 			double total = list.stream().map(ExpensesEntity::getAmount).reduce(0.0, Double::sum);
 			
