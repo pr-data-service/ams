@@ -64,6 +64,7 @@ import com.drps.ams.util.DateUtils;
 import com.drps.ams.util.DynamicQuery;
 import com.drps.ams.util.ExcelFiles;
 import com.drps.ams.util.FileUtils;
+import com.drps.ams.util.ParameterVerifier;
 
 import lombok.NonNull;
 
@@ -387,8 +388,8 @@ public class ExpensesServiceImpl implements ExpensesService {
 		try {
 			List<ExpensesEntity> list = expensesRepository.getAll(userContext.getApartmentId(), userContext.getSessionId());
 			list = list.stream().filter( f ->(f.getIsCanceled() == null || !f.getIsCanceled()) && 
-											(f.getApprovedbySecId() != null && f.getApprovedbySecId() > 0) &&
-											(f.getApprovedByTrsId() != null && f.getApprovedByTrsId() > 0)
+											ParameterVerifier.getLong(f.getApprovedbySecId()) > 0 &&
+											ParameterVerifier.getLong(f.getApprovedByTrsId()) > 0
 										).collect(Collectors.toList());
 			
 			double total = list.stream().map(ExpensesEntity::getAmount).reduce(0.0, Double::sum);

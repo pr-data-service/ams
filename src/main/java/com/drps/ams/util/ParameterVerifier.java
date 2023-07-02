@@ -65,6 +65,18 @@ public class ParameterVerifier {
 		return no;
 	}
 	
+	public static long getLong(Object arg) {
+		long no = 0;
+		try {
+			if(isValidParam(arg)) {
+				no = Long.valueOf(String.valueOf(arg));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return no;
+	}
+	
 	public static double getDouble(Object arg) {
 		double no = 0.0;
 		try {

@@ -12,6 +12,7 @@ import com.drps.ams.entity.EventsEntity;
 import com.drps.ams.entity.ExpensesEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.PaymentDetailsEntity;
+import com.drps.ams.entity.UserDetailsEntity;
 import com.drps.ams.util.DateUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -34,8 +35,6 @@ public class ExpensesDTO {
 	public String accountNo;
 	public Double amount;
 	public String description;
-	private Long approvedbySecId;
-	private Long approvedByTrsId;
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = DateUtils.TIMEZONE_ASIA_KOLKATA, shape = JsonFormat.Shape.STRING)
 	public Date expenseDate;
 	
@@ -49,6 +48,15 @@ public class ExpensesDTO {
 	public String eventName;
 	private Boolean isCanceled;
 	private String cancelRemarks;
+	
+	@FKEntityFieldMapping(entity = UserDetailsEntity.class, join = FKEntityFieldMapping.LEFT_JOIN)
+	private Long approvedbySecId;
+	@EntityFieldMapping(entity = UserDetailsEntity.class, name = "CONCAT(firstName, lastName)")
+	public String approvedBySecName;
+	@FKEntityFieldMapping(entity = UserDetailsEntity.class, join = FKEntityFieldMapping.LEFT_JOIN)
+	private Long approvedByTrsId;
+	@EntityFieldMapping(entity = UserDetailsEntity.class, name = "CONCAT(firstName, lastName)")
+	public String approvedByTrsName;
 	public Long apartmentId;
 	public Long createdBy;
 	public String createdByName;
