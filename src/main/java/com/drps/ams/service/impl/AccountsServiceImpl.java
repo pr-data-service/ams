@@ -1,6 +1,7 @@
 package com.drps.ams.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -132,13 +133,17 @@ public class AccountsServiceImpl implements AccountsService {
 		
 		OpeningBalanceDTO dto = new OpeningBalanceDTO();
 		if(entity != null) {
-			UserDetailsEntity createdBy = userDetailsRepository.findById(entity.getCreatedBy()).orElse(null);
-			UserDetailsEntity modifiedBy = userDetailsRepository.findById(entity.getModifiedBy()).orElse(null);
-			
 			BeanUtils.copyProperties(entity, dto);
 			
-			dto.setCreatedByName(Utils.getUserFullName(createdBy));
-			dto.setModifiedByName(Utils.getUserFullName(modifiedBy));
+			if(!Objects.isNull(entity.getCreatedBy())) {
+				UserDetailsEntity createdBy = userDetailsRepository.findById(entity.getCreatedBy()).orElse(null);
+				dto.setCreatedByName(Utils.getUserFullName(createdBy));
+			}
+			
+			if(!Objects.isNull(entity.getModifiedBy())) {
+				UserDetailsEntity modifiedBy = userDetailsRepository.findById(entity.getModifiedBy()).orElse(null);
+				dto.setModifiedByName(Utils.getUserFullName(modifiedBy));
+			}
 			
 			dto.setInBankAccount( ParameterVerifier.getDouble(dto.getInBankAccount()));
 			dto.setCashInHand( ParameterVerifier.getDouble(dto.getCashInHand()));

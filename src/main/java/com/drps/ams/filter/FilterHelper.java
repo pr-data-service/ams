@@ -18,6 +18,7 @@ import com.drps.ams.repository.ApartmentDetailsRepository;
 import com.drps.ams.repository.SessionDetailsRepository;
 import com.drps.ams.security.JwtTokenUtil;
 import com.drps.ams.service.impl.JwtUserDetailsServiceImpl;
+import com.drps.ams.util.ParameterVerifier;
 
 import io.jsonwebtoken.ExpiredJwtException;
 
@@ -92,7 +93,7 @@ public class FilterHelper {
 		UserContext userContext = this.jwtUserDetailsService.loadUserByUsername(username);
 		
 
-		if(!StringUtils.isEmpty(apartmentId)) {
+		if(!StringUtils.isEmpty(apartmentId) && ParameterVerifier.getLong(apartmentId) > 0) {
 			ApartmentDetailsEntity apartmentDetailsEntity = apartmentDetailsRepository.findById(Long.parseLong(apartmentId)).get();
 			if(apartmentDetailsEntity == null) {
 				throw new RuntimeException("Apartment not found.");
@@ -100,7 +101,7 @@ public class FilterHelper {
 			userContext.setApartmentDetailsEntity(apartmentDetailsEntity);
 		}
 		
-		if(!StringUtils.isEmpty(sessionId)) {
+		if(!StringUtils.isEmpty(sessionId) && ParameterVerifier.getLong(sessionId) > 0) {
 			SessionDetailsEntity session = sessionDetailsRepository.findById(Long.parseLong(sessionId)).get();
 			if(session == null) {
 				throw new RuntimeException("Session not found.");
