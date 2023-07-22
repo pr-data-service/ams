@@ -11,19 +11,20 @@ import org.springframework.stereotype.Repository;
 import com.drps.ams.entity.EventsEntity;
 import com.drps.ams.entity.FlatDetailsEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
+import com.drps.ams.util.ApiConstants;
 
 @Repository
 public interface EventsRepository extends JpaRepository<EventsEntity, Long>, CrudRepository<EventsEntity, Long>, JpaSpecificationExecutor<EventsEntity> {
 
-	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.name != 'MAINTENANCE'")
+	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.name != '"+ApiConstants.DEFAULT_EVENT_NAME+"'")
 	List<EventsEntity> getAll(Long apartmentId);
 	
-	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.isActive = 1 AND e.name != 'MAINTENANCE'")
+	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.isActive = 1 AND e.name != '"+ApiConstants.DEFAULT_EVENT_NAME+"'")
 	List<EventsEntity> getAllActiveEntity(Long apartmentId);
 	
-	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.name = :name AND e.name != 'MAINTENANCE'")
+	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.name = :name AND e.name != '"+ApiConstants.DEFAULT_EVENT_NAME+"'")
 	List<EventsEntity> findByName(Long apartmentId, String name);
 	
-	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.id IN (:idList) AND e.name != 'MAINTENANCE'")
+	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.id IN (:idList) AND e.name != '"+ApiConstants.DEFAULT_EVENT_NAME+"'")
 	List<EventsEntity> getListByIds(Long apartmentId, List<Long> idList);
 }

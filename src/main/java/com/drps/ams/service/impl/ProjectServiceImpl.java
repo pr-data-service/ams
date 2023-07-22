@@ -76,7 +76,6 @@ public class ProjectServiceImpl implements ProjectService {
 		
 		ApartmentDetailsEntity appEntity = null;
 		UserDetailsEntity userEntity = null;
-		SessionDetailsEntity sessionEntity = null;
 		
 		if(Objects.isNull(appartmentDto)) {
 			throw new RuntimeException("Appartment Data not found!");

@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 import com.drps.ams.bean.UserContext;
 import com.drps.ams.entity.ApartmentDetailsEntity;
 import com.drps.ams.entity.SessionDetailsEntity;
+import com.drps.ams.exception.ApartmentNotFoundException;
 import com.drps.ams.exception.InvalidEmailException;
+import com.drps.ams.exception.SessionNotFoundException;
 import com.drps.ams.repository.ApartmentDetailsRepository;
 import com.drps.ams.repository.SessionDetailsRepository;
 import com.drps.ams.security.JwtTokenUtil;
@@ -96,7 +98,7 @@ public class FilterHelper {
 		if(!StringUtils.isEmpty(apartmentId) && ParameterVerifier.getLong(apartmentId) > 0) {
 			ApartmentDetailsEntity apartmentDetailsEntity = apartmentDetailsRepository.findById(Long.parseLong(apartmentId)).get();
 			if(apartmentDetailsEntity == null) {
-				throw new RuntimeException("Apartment not found.");
+				throw new ApartmentNotFoundException();
 			}
 			userContext.setApartmentDetailsEntity(apartmentDetailsEntity);
 		}
@@ -104,7 +106,7 @@ public class FilterHelper {
 		if(!StringUtils.isEmpty(sessionId) && ParameterVerifier.getLong(sessionId) > 0) {
 			SessionDetailsEntity session = sessionDetailsRepository.findById(Long.parseLong(sessionId)).get();
 			if(session == null) {
-				throw new RuntimeException("Session not found.");
+				throw new SessionNotFoundException();
 			}
 			userContext.setSessionDetailsEntity(session);
 		}

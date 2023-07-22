@@ -59,7 +59,7 @@ public class EventsServiceImpl implements EventsService {
 		
 		UserContext userContext = Utils.getUserContext();
 		
-		if("MAINTENANCE".equalsIgnoreCase(eventsDTO.getName())) {
+		if(ApiConstants.DEFAULT_EVENT_NAME.equalsIgnoreCase(eventsDTO.getName())) {
 				throw new RuntimeException("This event name used by system. Please try with another name.");
 		} else if(isDuplicateRecord(eventsDTO)) {
 			throw new DuplicateRecordException(ApiConstants.STATUS_MESSAGE.get(ApiConstants.RESP_STATUS_DUPLICATE_RECORD_EXCEPTION));
@@ -70,7 +70,7 @@ public class EventsServiceImpl implements EventsService {
 			eventsEntity = eventsRepository.findById(eventsDTO.getId()).get();
 			if(eventsEntity == null) {
 				throw new NoRecordFoundException("Record not found");
-			} else if("MAINTENANCE".equals(eventsEntity.getName())) {
+			} else if(ApiConstants.DEFAULT_EVENT_NAME.equals(eventsEntity.getName())) {
 				throw new RuntimeException("This system record can not update or modify.");
 			} else {
 				BeanUtils.copyProperties(eventsDTO, eventsEntity, Utils.getIgnoreEntityPropsOnUpdate(new String[] {"isActive"}));
@@ -99,8 +99,8 @@ public class EventsServiceImpl implements EventsService {
 		UserContext userContext = Utils.getUserContext();
 		
 		RequestParamDTO reqParamDto = RequestParamDTO.getInstance(reqParams);
-		List<EventsDTO> rtnList = dbQueryExecuter.executeQuery(new QueryMaker(reqParamDto, EventsDTO.class));
-		rtnList = rtnList.stream().filter( f -> !"MAINTENANCE".equalsIgnoreCase(f.getName())).collect(Collectors.toList());
+		List<EventsDTO> rtnList = dbQueryExecuter.executeQuery(new QueryMaker<EventsDTO>(reqParamDto, EventsDTO.class));
+		rtnList = rtnList.stream().filter( f -> !ApiConstants.DEFAULT_EVENT_NAME.equalsIgnoreCase(f.getName())).collect(Collectors.toList());
 		commonService.addUserDetailsToDTO(rtnList, EventsDTO.class);
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
 	}
@@ -113,6 +113,7 @@ public class EventsServiceImpl implements EventsService {
 		//List<EventsEntity> list = eventsRepository.getAll(userContext.getApartmentId(), userContext.getSessionId());
 		RequestParamDTO reqParamDto = RequestParamDTO.getInstance(reqParams);
 		List<EventsEntity> list = eventsRepository.findAll(new DynamicQuery<EventsEntity>(reqParamDto));
+		list = list.stream().filter( f -> !ApiConstants.DEFAULT_EVENT_NAME.equalsIgnoreCase(f.getName())).collect(Collectors.toList());
 		List<EventsDTO> rtnList = Utils.convertList(list, EventsDTO.class);
 		return new ApiResponseEntity(ApiConstants.RESP_STATUS_SUCCESS, rtnList);
 	}

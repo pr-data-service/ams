@@ -94,6 +94,7 @@ public class ApiConstants {
 	public static final long LIST_OPTION_SELECT_VAL = -99999;
 	
 	private static final String SYSTEM_USER_NAME = "System";
+	public static final String DEFAULT_EVENT_NAME = "MAINTENANCE";
 	
 	public static String getSystemUserName(long id) {
 		return id == SYSTEM_USER_ID ? SYSTEM_USER_NAME : "";
