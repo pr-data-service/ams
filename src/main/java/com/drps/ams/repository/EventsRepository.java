@@ -27,4 +27,7 @@ public interface EventsRepository extends JpaRepository<EventsEntity, Long>, Cru
 	
 	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.id IN (:idList) AND e.name != '"+ApiConstants.DEFAULT_EVENT_NAME+"'")
 	List<EventsEntity> getListByIds(Long apartmentId, List<Long> idList);
+	
+	@Query("SELECT e FROM EventsEntity e WHERE e.apartmentId = :apartmentId AND e.isActive = 1")
+	List<EventsEntity> getAllActiveEntityWithMaintenanceEvent(Long apartmentId);
 }

@@ -454,6 +454,7 @@ public class PaymentServiceImpl implements PaymentService {
 		String endDt = DateUtils.dateToStringForDB(lastDay) + " 23:59:59";
 		List<Object[]> list = paymentRepository.getMonthlyPaymentList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTimeForDB(startDt), DateUtils.stringToDateTimeForDB(endDt));
 		List<Object[]> detailsList = paymentDetailsRepository.getMonthlyPaymentDetailsList(userContext.getApartmentId(), userContext.getSessionId(), DateUtils.stringToDateTimeForDB(startDt), DateUtils.stringToDateTimeForDB(endDt));
+		List<EventsEntity> eventList = eventsRepository.getAllActiveEntityWithMaintenanceEvent(userContext.getApartmentId());
 		
 		List<PaymentDTO> listDto = new ArrayList<>();
 		for(Object[] arr : list) {
@@ -492,7 +493,7 @@ public class PaymentServiceImpl implements PaymentService {
             Files.createDirectories(fileStorageLocation);
             String fileName = path + "/" +  "payment-receipt_"+ folderName;
             
-            ExcelFiles.paymentWithDetails(listDto, detailsListDto, folderName, fileName);
+            ExcelFiles.paymentWithDetails(listDto, detailsListDto, eventList, folderName, fileName);
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }

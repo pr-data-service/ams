@@ -3,6 +3,9 @@ package com.drps.ams.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -17,66 +20,80 @@ import com.drps.ams.dto.ExpenseItemsDTO;
 import com.drps.ams.dto.ExpensesDTO;
 import com.drps.ams.dto.PaymentDTO;
 import com.drps.ams.dto.PaymentDetailsDTO;
+import com.drps.ams.entity.EventsEntity;
 
 public class ExcelFileUtils {
 	
-	public static void paymentRows(Sheet sheet, List<PaymentDTO> pdtos) {
+	public static void paymentRows(Sheet sheet, List<PaymentDTO> pdtos, List<PaymentDetailsDTO> ddtos, List<EventsEntity> eventList) {
 		int rowNum = 1;
+		int colNm = 0;
 		for(PaymentDTO entity: pdtos) {
+			colNm = 0;
 			Row row = sheet.createRow(rowNum++);
-			Cell cell = row.createCell(0);
+			Cell cell = row.createCell(colNm++);
 			cell.setCellValue(rowNum-1);
 			
-			cell = row.createCell(1);
+			cell = row.createCell(colNm++);
 			if(entity.getBillNo() != null) {
 				cell.setCellValue(entity.getBillNo());
 			}
 			
-			cell = row.createCell(2);
+			cell = row.createCell(colNm++);
 			if(entity.getFlatNo() != null) {
 				cell.setCellValue(entity.getFlatNo());
 			}
 			
-			cell = row.createCell(3);
+			for(Long eventId : eventList.stream().map(EventsEntity::getId).collect(Collectors.toList())) {
+				Optional<PaymentDetailsDTO> eventDtls = ddtos.stream().filter( f -> f.getPaymentId().equals(entity.getId())
+						&& f.getEventId().equals(eventId)).findFirst();
+				cell = row.createCell(colNm++);
+				if(eventDtls.isPresent() && !Objects.isNull(eventDtls.get().getAmount())) {
+					cell.setCellValue(eventDtls.get().getAmount());
+				} else {
+					cell.setCellValue(0);
+				}
+			}
+			
+			cell = row.createCell(colNm++);
 			if(entity.getAmount() != null) {
 				cell.setCellValue(entity.getAmount());
 			}
 			
-			cell = row.createCell(4);
+			cell = row.createCell(colNm++);
 			if(entity.getPaymentMode() != null) {
 				cell.setCellValue(entity.getPaymentMode());
 			}
-			cell = row.createCell(5);
+			cell = row.createCell(colNm++);
 			if(entity.getPaymentModeRef() != null) {
 				cell.setCellValue(entity.getPaymentModeRef());
 			}
 			
-			cell = row.createCell(6);
+			cell = row.createCell(colNm++);
 			if(entity.getPaymentDate() != null) {
 				cell.setCellValue(DateUtils.dateToString(entity.getPaymentDate()));
 			}
 			
-			cell = row.createCell(7);
+			cell = row.createCell(colNm++);
 			if(entity.getPaymentByName() != null) {
 				cell.setCellValue(entity.getPaymentByName());
 			}
 			
-			cell = row.createCell(8);
+			cell = row.createCell(colNm++);
 			if(entity.getIsCanceled() != null) {
 				cell.setCellValue(entity.getIsCanceled().booleanValue());
 			}
 			
-			cell = row.createCell(9);
+			cell = row.createCell(colNm++);
 			if(entity.getCancelRemarks() != null) {
 				cell.setCellValue(entity.getCancelRemarks());
 			}
 			
-			cell = row.createCell(10);
+			cell = row.createCell(colNm++);
 			if(entity.getCreatedDate() != null) {
 				cell.setCellValue(DateUtils.dateToString(entity.getCreatedDate()));
 			}
 			
-			cell = row.createCell(11);
+			cell = row.createCell(colNm++);
 			if(entity.getCreatedByName() != null) {
 				cell.setCellValue(entity.getCreatedByName());
 			}
